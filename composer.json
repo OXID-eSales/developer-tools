@@ -1,0 +1,22 @@
+{
+  "name": "oxid-esales/developer-tools",
+  "description": "The component contains developer tools.",
+  "type": "oxideshop-component",
+  "keywords": ["oxid", "component", "eShop"],
+  "homepage": "https://www.oxid-esales.com",
+  "license": [
+    "GPL-3.0-only"
+  ],
+  "require": {
+    "php": ">=7.1"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^6.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "OxidEsales\\DeveloperTools\\": "./src",
+      "OxidEsales\\DeveloperTools\\Test\\": "./tests"
+    }
+  }
+}
