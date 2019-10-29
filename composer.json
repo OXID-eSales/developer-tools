@@ -15,8 +15,12 @@
   },
   "autoload": {
     "psr-4": {
-      "OxidEsales\\DeveloperTools\\": "./src",
-      "OxidEsales\\DeveloperTools\\Test\\": "./tests"
+      "OxidEsales\\DeveloperTools\\": "./src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "OxidEsales\\DeveloperTools\\Tests\\": "./tests"
     }
   }
 }
