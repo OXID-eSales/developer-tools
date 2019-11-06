@@ -1,0 +1,2 @@
+imports:
+  - { resource: Module/ResetConfiguration/services.yaml }

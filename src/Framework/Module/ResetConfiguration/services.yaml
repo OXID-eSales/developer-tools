@@ -1,0 +1,15 @@
+services:
+  _defaults:
+    autowire: true
+    public: false
+
+  OxidEsales\DeveloperTools\Framework\Module\ResetConfiguration\ConfigurationResettingServiceInterface:
+    class: OxidEsales\DeveloperTools\Framework\Module\ResetConfiguration\ConfigurationResettingService
+    arguments:
+      $projectConfigurationGenerator: '@oxid_esales.module.install.service.launched_shop_project_configuration_generator'
+
+  oxid_esales.command.module_configuration_restore_command:
+    class: OxidEsales\DeveloperTools\Framework\Module\ResetConfiguration\ResetConfigurationCommand
+    tags:
+      - { name: 'console.command', command: 'oe:module:reset-configurations', description: 'Removes and re-installs project configuration files.'}
+    public: true
