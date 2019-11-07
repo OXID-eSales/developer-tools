@@ -1,20 +1,10 @@
-<?php
-
+<?php declare(strict_types=1);
 /**
  * Copyright © OXID eSales AG. All rights reserved.
  * See LICENSE file for license details.
  */
 
-declare(strict_types=1);
-
-/**
- * Metadata version
- */
 $sMetadataVersion = '2.1';
-
-/**
- * Module information
- */
 $aModule = [
     'id' => 'some-module',
     'version' => '1.0',

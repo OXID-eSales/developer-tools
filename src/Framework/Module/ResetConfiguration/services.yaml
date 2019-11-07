@@ -11,5 +11,5 @@ services:
   oxid_esales.command.module_configuration_restore_command:
     class: OxidEsales\DeveloperTools\Framework\Module\ResetConfiguration\ResetConfigurationCommand
     tags:
-      - { name: 'console.command', command: 'oe:module:reset-configurations', description: 'Removes and re-installs project configuration files.'}
+      - { name: 'console.command', command: 'oe:module:reset-configurations', description: 'Removes and re-installs project configuration.'}
     public: true

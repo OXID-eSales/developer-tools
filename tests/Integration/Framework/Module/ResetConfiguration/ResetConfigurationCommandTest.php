@@ -1,11 +1,8 @@
-<?php
-
+<?php declare(strict_types=1);
 /**
  * Copyright © OXID eSales AG. All rights reserved.
  * See LICENSE file for license details.
  */
-
-declare(strict_types=1);
 
 namespace OxidEsales\DeveloperTools\Tests\Integration\Framework\Module\ResetConfiguration;
 
@@ -25,10 +22,6 @@ use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Filesystem\Filesystem;
 use Webmozart\PathUtil\Path;
 
-/**
- * Class ResetConfigurationCommandTest
- * @package OxidEsales\DeveloperTools\Tests\Integration\Framework\Module\ResetConfiguration
- */
 final class ResetConfigurationCommandTest extends TestCase
 {
     use ContainerTrait;
@@ -60,7 +53,6 @@ final class ResetConfigurationCommandTest extends TestCase
         $settingName = 'some-setting';
         $defaultValueFromMetadata = 'some-default-value';
 
-        $application = $this->getApplication();
         $this->installTestModule();
         $configurationDao = $this->get(ModuleConfigurationDaoInterface::class);
         $configuration = $configurationDao->get($this->moduleId, $this->shopId);
@@ -69,7 +61,7 @@ final class ResetConfigurationCommandTest extends TestCase
         $configurationDao->save($configuration, $this->shopId);
 
         $this->execute(
-            $application,
+            $this->getApplication(),
             $this->get('oxid_esales.console.commands_provider.services_commands_provider'),
             new ArrayInput(['command' => 'oe:module:reset-configurations'])
         );
