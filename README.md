@@ -11,7 +11,12 @@ composer require oxid-esales/developer-tools
 
 ## Usage
 
-TBD
+### Resetting project configuration
+To reset project configuration to its initial state execute:
+
+```bash
+bin/oe-console oe:module:reset-configurations 
+```
 
 ## How to install component for development?
 
