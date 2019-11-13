@@ -7,6 +7,7 @@ services:
     class: OxidEsales\DeveloperTools\Framework\Module\ResetConfiguration\ConfigurationResettingService
     arguments:
       $projectConfigurationGenerator: '@oxid_esales.module.install.service.launched_shop_project_configuration_generator'
+    public: true
 
   oxid_esales.command.module_configuration_restore_command:
     class: OxidEsales\DeveloperTools\Framework\Module\ResetConfiguration\ResetConfigurationCommand
