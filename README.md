@@ -1,5 +1,6 @@
 # Developer Tools component
-This component contains additional developer tools for OXID eShop
+
+This component contains additional developer tools for OXID eShop.
 
 ## Installation
 
@@ -47,10 +48,6 @@ To run tests for the component please define OXID eShop bootstrap file:
 ```bash
 vendor/bin/phpunit --bootstrap=../source/bootstrap.php tests/
 ```
-
-## Bugs and Issues
-
-If you experience any bugs or issues, please report them in the section **OXID eShop** of https://bugs.oxid-esales.com.
 
 ## License
 
