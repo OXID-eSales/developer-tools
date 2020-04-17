@@ -1,8 +1,11 @@
-<?php declare(strict_types=1);
+<?php
+
 /**
  * Copyright © OXID eSales AG. All rights reserved.
  * See LICENSE file for license details.
  */
+
+declare(strict_types=1);
 
 namespace OxidEsales\DeveloperTools\Framework\Module\ResetConfiguration;
 
@@ -19,6 +22,7 @@ class ResetConfigurationCommand extends Command
     /** @var ConfigurationResettingServiceInterface */
     private $configurationResetter;
 
+    /** @param ConfigurationResettingServiceInterface $configurationRestorer */
     public function __construct(
         ConfigurationResettingServiceInterface $configurationRestorer
     ) {
@@ -32,9 +36,15 @@ class ResetConfigurationCommand extends Command
             ->setDescription(self::COMMAND_DESCRIPTION);
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->configurationResetter->reset();
         $output->writeln(sprintf('<info>%s.</info>', self::EXECUTE_SUCCESS_MESSAGE));
+        return 0;
     }
 }

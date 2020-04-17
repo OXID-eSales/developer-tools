@@ -1,8 +1,11 @@
-<?php declare(strict_types=1);
+<?php
+
 /**
  * Copyright © OXID eSales AG. All rights reserved.
  * See LICENSE file for license details.
  */
+
+declare(strict_types=1);
 
 namespace OxidEsales\DeveloperTools\Tests\Integration\Framework\Module\ResetConfiguration;
 
@@ -34,14 +37,14 @@ final class ResetConfigurationCommandTest extends TestCase
     /** @var int  */
     private $shopId = 1;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->databaseRestorer = new DatabaseRestorer();
         $this->databaseRestorer->dumpDB(__CLASS__);
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         $this->databaseRestorer->restoreDB(__CLASS__);
         $this->cleanupTestData();
