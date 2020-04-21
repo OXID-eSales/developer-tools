@@ -30,7 +30,7 @@ class ResetConfigurationCommand extends Command
         $this->configurationResetter = $configurationRestorer;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName(self::COMMAND_NAME)
             ->setDescription(self::COMMAND_DESCRIPTION);
@@ -41,7 +41,7 @@ class ResetConfigurationCommand extends Command
      * @param OutputInterface $output
      * @return int
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->configurationResetter->reset();
         $output->writeln(sprintf('<info>%s.</info>', self::EXECUTE_SUCCESS_MESSAGE));
