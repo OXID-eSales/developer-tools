@@ -10,9 +10,12 @@ declare(strict_types=1);
 namespace OxidEsales\DeveloperTools\Framework\Module\ResetConfiguration;
 
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Dao\ShopConfigurationDaoInterface;
+use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\DataObject\ModuleConfiguration;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Install\Service\ModuleConfigurationInstallerInterface;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Install\Service\ProjectConfigurationGeneratorInterface;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Path\ModulePathResolverInterface;
+use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
+use Webmozart\PathUtil\Path;
 
 class ConfigurationResettingService implements ConfigurationResettingServiceInterface
 {
@@ -24,45 +27,61 @@ class ConfigurationResettingService implements ConfigurationResettingServiceInte
     private $shopConfigurationDao;
     /** @var ProjectConfigurationGeneratorInterface */
     private $projectConfigurationGenerator;
+    /**
+     * @var ContextInterface
+     */
+    private $context;
 
     public function __construct(
         ModuleConfigurationInstallerInterface $moduleConfigurationInstaller,
         ModulePathResolverInterface $modulePathResolver,
         ShopConfigurationDaoInterface $shopConfigurationDao,
-        ProjectConfigurationGeneratorInterface $projectConfigurationGenerator
+        ProjectConfigurationGeneratorInterface $projectConfigurationGenerator,
+        ContextInterface $context
     ) {
         $this->moduleConfigurationInstaller = $moduleConfigurationInstaller;
         $this->modulePathResolver = $modulePathResolver;
         $this->shopConfigurationDao = $shopConfigurationDao;
         $this->projectConfigurationGenerator = $projectConfigurationGenerator;
+        $this->context = $context;
     }
 
     public function reset(): void
     {
-        $modulePaths = $this->collectModulePaths();
-        $this->resetConfigurationStorage();
-        array_walk($modulePaths, function ($path) {
-            $this->moduleConfigurationInstaller->install($path, $path);
-        });
-    }
-
-    private function collectModulePaths(): array
-    {
-        $paths = [];
         $shopId = $this->getAnyShopIdFromConfiguration();
         $moduleConfigurations = $this->getModuleConfigurationsPrototype($shopId);
-        foreach ($moduleConfigurations as $configuration) {
-            $paths[] = $this->modulePathResolver->getFullModulePathFromConfiguration($configuration->getId(), $shopId);
+        $fullPaths =$this->getAllModulesFullPathFromConfiguration($moduleConfigurations, $shopId);
+
+        $this->resetConfigurationStorage();
+        foreach ($moduleConfigurations as $moduleConfiguration) {
+            $this->moduleConfigurationInstaller->install(
+                $fullPaths[$moduleConfiguration->getId()],
+                Path::join($this->context->getModulesPath(), $moduleConfiguration->getPath())
+            );
         }
-        return $paths;
+    }
+
+    private function getAllModulesFullPathFromConfiguration(array $moduleConfigurations, int $shopId): array
+    {
+        $fullPaths = [];
+        foreach ($moduleConfigurations as $moduleConfiguration) {
+            $fullPaths[$moduleConfiguration->getId()] =
+                $this->modulePathResolver->getFullModulePathFromConfiguration
+                (
+                    $moduleConfiguration->getId(),
+                    $shopId
+                );
+        }
+
+        return $fullPaths;
     }
 
     private function getAnyShopIdFromConfiguration(): int
     {
         $shopIds = array_keys($this->shopConfigurationDao->getAll());
+
         return $this->getFirstShopId($shopIds);
     }
-
 
     private function getFirstShopId(array $ids): int
     {
