@@ -79,14 +79,20 @@ final class ResetConfigurationCommandTest extends TestCase
     {
         $this->get(ModuleInstallerInterface::class)
             ->install(
-                new OxidEshopPackage($this->moduleId, Path::join(__DIR__ . '/Fixtures', 'TestModule'))
+                new OxidEshopPackage(Path::join(__DIR__ . '/Fixtures', 'TestModule'))
             );
     }
 
     private function cleanupTestData(): void
     {
-        $fileSystem = new Filesystem();
-        $fileSystem->remove(Path::join(Registry::getConfig()->getModulesDir(), $this->moduleId));
+        $this
+            ->get(ModuleInstallerInterface::class)
+            ->uninstall(
+                new OxidEshopPackage(
+                    Path::join(__DIR__ . '/Fixtures', 'TestModule')
+                )
+            );
+
         $activeModules = new ShopConfigurationSetting();
         $activeModules
             ->setName(ShopConfigurationSetting::ACTIVE_MODULES)
