@@ -50,13 +50,12 @@ class ConfigurationResettingService implements ConfigurationResettingServiceInte
     {
         $shopId = $this->getAnyShopIdFromConfiguration();
         $moduleConfigurations = $this->getModuleConfigurationsPrototype($shopId);
-        $fullPaths =$this->getAllModulesFullPathFromConfiguration($moduleConfigurations, $shopId);
+        $fullPaths = $this->getAllModulesFullPathFromConfiguration($moduleConfigurations, $shopId);
 
         $this->resetConfigurationStorage();
         foreach ($moduleConfigurations as $moduleConfiguration) {
             $this->moduleConfigurationInstaller->install(
-                $fullPaths[$moduleConfiguration->getId()],
-                Path::join($this->context->getModulesPath(), $moduleConfiguration->getPath())
+                $fullPaths[$moduleConfiguration->getId()]
             );
         }
     }
@@ -66,8 +65,7 @@ class ConfigurationResettingService implements ConfigurationResettingServiceInte
         $fullPaths = [];
         foreach ($moduleConfigurations as $moduleConfiguration) {
             $fullPaths[$moduleConfiguration->getId()] =
-                $this->modulePathResolver->getFullModulePathFromConfiguration
-                (
+                $this->modulePathResolver->getFullModulePathFromConfiguration(
                     $moduleConfiguration->getId(),
                     $shopId
                 );
