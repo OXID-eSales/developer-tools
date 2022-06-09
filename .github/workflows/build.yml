@@ -104,7 +104,7 @@ jobs:
         run: |
           docker-compose run -T \
             -e RUN_TESTS_FOR_SHOP=0 \
-            -e ADDITIONAL_TEST_PATHs=vendor/oxid-esales/developer-tools/tests \
+            -e ADDITIONAL_TEST_PATHS=vendor/oxid-esales/developer-tools/tests \
             -e TEST_DIRS=integration,Integration \
             php php vendor/bin/runtests | tee integration_PHP${{ matrix.php }}_MYSQL${{ matrix.mysql }}_phpunit_log.txt 2>&1 || true
           if grep -q -Ei 'fail|\\.\\=\\=|Warning|Notice|Deprecated|Fatal|Error' integration_PHP${{ matrix.php }}_MYSQL${{ matrix.mysql }}_phpunit_log.txt; then exit 1; fi
