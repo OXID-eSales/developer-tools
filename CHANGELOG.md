@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Module path issue in codeception
+- 
+## [v1.1.0] - 2022-07-19
+
+### Added
+- Compatibility with Symfony v5
 
 ## [v1.0.1] - 2020-04-21
 
@@ -22,5 +27,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Reset configuration command
 
+[1.1.0]: https://github.com/OXID-eSales/developer-tools/compare/v1.0.1..v1.1.0
 [1.0.1]: https://github.com/OXID-eSales/developer-tools/compare/v1.0.0..v1.0.1
 [1.0.0]: https://github.com/OXID-eSales/developer-tools/compare/d21030a98e3cce0dd67ce3b63d74728b04592644..v1.0.0
