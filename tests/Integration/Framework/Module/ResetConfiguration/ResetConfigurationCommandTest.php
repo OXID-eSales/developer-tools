@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace OxidEsales\DeveloperTools\Tests\Integration\Framework\Module\ResetConfiguration;
 
-use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\EshopCommunity\Internal\Framework\Config\Dao\ShopConfigurationSettingDaoInterface;
 use OxidEsales\EshopCommunity\Internal\Framework\Config\DataObject\ShopConfigurationSetting;
 use OxidEsales\EshopCommunity\Internal\Framework\Config\DataObject\ShopSettingType;
@@ -18,11 +18,9 @@ use OxidEsales\EshopCommunity\Internal\Framework\Module\Install\DataObject\OxidE
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Install\Service\ModuleInstallerInterface;
 use OxidEsales\EshopCommunity\Tests\Integration\Internal\ContainerTrait;
 use OxidEsales\EshopCommunity\Tests\Integration\Internal\Framework\Console\ConsoleTrait;
-use OxidEsales\TestingLibrary\Services\Library\DatabaseRestorer\DatabaseRestorer;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Filesystem\Filesystem;
 use Webmozart\PathUtil\Path;
 
 final class ResetConfigurationCommandTest extends TestCase
@@ -30,24 +28,20 @@ final class ResetConfigurationCommandTest extends TestCase
     use ContainerTrait;
     use ConsoleTrait;
 
-    /** @var DatabaseRestorer */
-    private $databaseRestorer;
     /** @var string  */
     private $moduleId = 'some-module';
     /** @var int  */
     private $shopId = 1;
 
-    protected function setUp(): void
+    public function setUp(): void
     {
         parent::setUp();
-        $this->databaseRestorer = new DatabaseRestorer();
-        $this->databaseRestorer->dumpDB(__CLASS__);
+        $this->beginTransaction();
     }
 
-    protected function tearDown(): void
+    public function tearDown(): void
     {
-        $this->databaseRestorer->restoreDB(__CLASS__);
-        $this->cleanupTestData();
+        $this->rollBackTransaction();
         parent::tearDown();
     }
 
@@ -108,4 +102,16 @@ final class ResetConfigurationCommandTest extends TestCase
         $application->setAutoExit(false);
         return $application;
     }
+    private function beginTransaction()
+    {
+        DatabaseProvider::getDb()->startTransaction();
+    }
+
+    private function rollBackTransaction()
+    {
+        if (DatabaseProvider::getDb()->isTransactionActive()) {
+            DatabaseProvider::getDb()->rollbackTransaction();
+        }
+    }
+
 }

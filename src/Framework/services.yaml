@@ -1,2 +1,4 @@
 imports:
   - { resource: Module/ResetConfiguration/services.yaml }
+  - { resource: Database/Command/services.yaml }
+  - { resource: Database/Service/services.yaml }

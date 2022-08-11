@@ -1,0 +1,9 @@
+services:
+    _defaults:
+        autowire: true
+        public: false
+
+    OxidEsales\DeveloperTools\Framework\Database\Command\ResetDatabaseCommand:
+        class: OxidEsales\DeveloperTools\Framework\Database\Command\ResetDatabaseCommand
+        tags:
+            - { name: 'console.command', command: 'oe:database:reset' }

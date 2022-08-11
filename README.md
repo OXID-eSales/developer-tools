@@ -19,6 +19,30 @@ To reset project configuration to its initial state execute:
 bin/oe-console oe:module:reset-configurations 
 ```
 
+### Resetting/installing shop database
+To reset the database to its initial state run the following command:
+
+```bash
+bin/oe-console oe:database:reset --db-host DB-HOST --db-port DB-PORT --db-name DB-NAME --db-user DB-USER --db-password DB-PASSWORD [--force]
+```
+
+Which:
+
+    - <db-host> is the database host
+    - <db-port> is the database port
+    - <db-name> is the database name
+    - <db-user> is the database username
+    - <db-password> is the database password
+    - [<force>] (optional) if set runs the command without confirmation
+
+Example:
+
+```bash
+bin/oe-console oe:database:reset --db-host=localhost --db-port=3306 --db-name=test --db-user=test --db-password=test 
+```
+
+ATTENTION: After running this command, all you data will be deleted from the database. Never run this command on life system.
+
 ## How to install component for development?
 
 Checkout component besides OXID eShop `source` directory:
