@@ -16,7 +16,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class ResetConfigurationCommand extends Command
 {
     private const EXECUTE_SUCCESS_MESSAGE = 'Project configuration was reset successfully';
-    private const COMMAND_DESCRIPTION = 'Resets changes in project configuration.';
+    private const COMMAND_DESCRIPTION = 'Removes and re-installs project configuration.';
     private const COMMAND_NAME = 'oe:module:reset-configurations';
 
     /** @var ConfigurationResettingServiceInterface */
