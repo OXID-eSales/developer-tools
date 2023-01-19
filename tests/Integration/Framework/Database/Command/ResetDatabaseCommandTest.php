@@ -33,16 +33,27 @@ final class ResetDatabaseCommandTest extends TestCase
     private const DB_USER = 'some-db-user';
     private const DB_PASS = 'some-db-pass';
 
-    private $arguments = [
-        '--db-host' => self::HOST,
-        '--db-port' => self::PORT,
-        '--db-name' => self::DB,
-        '--db-user' => self::DB_USER,
-        '--db-password' => self::DB_PASS
+    private array $arguments = [
+        '--db-host'     => self::HOST,
+        '--db-port'     => self::PORT,
+        '--db-name'     => self::DB,
+        '--db-user'     => self::DB_USER,
+        '--db-password' => self::DB_PASS,
     ];
 
-    public function testExecuteWithMissingArgs(): void
+    /**
+     * @dataProvider missingOptions
+     */
+    public function testExecuteWithMissingArgs(string $command): void
     {
+        $options = [
+            '--db-host'     => self::HOST,
+            '--db-port'     => self::PORT,
+            '--db-name'     => self::DB,
+            '--db-user'     => self::DB_USER,
+            '--db-password' => self::DB_PASS,
+        ];
+
         $this->expectException(InvalidArgumentException::class);
 
         $databaseSetupCommand = new ResetDatabaseCommand(
@@ -52,7 +63,20 @@ final class ResetDatabaseCommandTest extends TestCase
             $this->getDropDatabaseServiceMock()
         );
         $commandTester = new CommandTester($databaseSetupCommand);
-        $commandTester->execute([]);
+        unset($options[$command]);
+
+        $commandTester->execute($options);
+    }
+
+    public function missingOptions(): array
+    {
+        return [
+            'Missing db-host'     => ['--db-host'],
+            'Missing db-port'     => ['--db-port'],
+            'Missing db-name'     => ['--db-name'],
+            'Missing db-user'     => ['--db-user'],
+            'Missing db-password' => ['--db-password'],
+        ];
     }
 
     public function testExecuteWithExistingDatabaseAndWithForceParameter(): void

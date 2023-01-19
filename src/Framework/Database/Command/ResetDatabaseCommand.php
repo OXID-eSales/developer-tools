@@ -39,22 +39,22 @@ class ResetDatabaseCommand extends Command
     /**
      * @var DatabaseCheckerInterface
      */
-    private $databaseChecker;
+    private DatabaseCheckerInterface $databaseChecker;
 
     /**
      * @var DatabaseCreatorInterface
      */
-    private $databaseCreator;
+    private DatabaseCreatorInterface $databaseCreator;
 
     /**
      * @var DatabaseInitiatorInterface
      */
-    private $databaseInitiator;
+    private DatabaseInitiatorInterface $databaseInitiator;
 
     /**
      * @var DropDatabaseServiceInterface
      */
-    private $dropDatabaseService;
+    private DropDatabaseServiceInterface $dropDatabaseService;
 
     public function __construct(
         DatabaseCheckerInterface $databaseChecker,
@@ -78,13 +78,27 @@ class ResetDatabaseCommand extends Command
             ->addOption(self::DB_NAME, null, InputOption::VALUE_REQUIRED)
             ->addOption(self::DB_USER, null, InputOption::VALUE_REQUIRED)
             ->addOption(self::DB_PASSWORD, null, InputOption::VALUE_REQUIRED)
-            ->addOption(self::FORCE_RESET, null, InputOption::VALUE_NONE, "Don't ask for the deletion of the database, but force the operation to run.");
-            $this->setDescription('Performs database reset. <error>ATTENTION: This operation should not be executed in a production environment.</error>');
+            ->addOption(
+                self::FORCE_RESET,
+                null,
+                InputOption::VALUE_NONE,
+                "Don't ask for the deletion of the database, but force the operation to run."
+            );
+        $this->setDescription('Performs database reset. <error>ATTENTION: This operation should not be executed in a production environment.</error>');
+
+        $this->setRequiredOptions([
+            self::DB_HOST,
+            self::DB_PORT,
+            self::DB_NAME,
+            self::DB_USER,
+            self::DB_PASSWORD,
+        ]);
     }
 
     /**
-     * @param InputInterface $input
+     * @param InputInterface  $input
      * @param OutputInterface $output
+     *
      * @return int
      * @throws DatabaseConnectionException
      * @throws DatabaseExistsException
@@ -108,7 +122,7 @@ class ResetDatabaseCommand extends Command
             $this->createDatabase($input);
         } catch (DatabaseExistsException $exception) {
         }
-        
+
         $output->writeln('<info>Initializing database...</info>');
         $this->initializeDatabase($input);
 
@@ -118,8 +132,9 @@ class ResetDatabaseCommand extends Command
     }
 
     /**
-     * @param InputInterface $input
+     * @param InputInterface  $input
      * @param OutputInterface $output
+     *
      * @return bool
      */
     private function confirmAction(InputInterface $input, OutputInterface $output): bool
@@ -129,9 +144,10 @@ class ResetDatabaseCommand extends Command
 
         return $helper->ask($input, $output, $question);
     }
-    
+
     /**
      * @param InputInterface $input
+     *
      * @return string
      */
     private function getQuestionText(InputInterface $input): string
@@ -142,6 +158,7 @@ class ResetDatabaseCommand extends Command
 
     /**
      * @param InputInterface $input
+     *
      * @return bool
      */
     private function forceDatabaseReset(InputInterface $input): bool
@@ -152,20 +169,23 @@ class ResetDatabaseCommand extends Command
 
     /**
      * @param InputInterface $input
+     *
      * @throws DatabaseConnectionException
      */
     private function dropDatabase(InputInterface $input): void
     {
         $this->dropDatabaseService->dropDatabase(
             $input->getOption(self::DB_HOST),
-            (int) $input->getOption(self::DB_PORT),
+            (int)$input->getOption(self::DB_PORT),
             $input->getOption(self::DB_USER),
             $input->getOption(self::DB_PASSWORD),
-            $input->getOption(self::DB_NAME));
+            $input->getOption(self::DB_NAME)
+        );
     }
 
     /**
      * @param InputInterface $input
+     *
      * @throws DatabaseExistsException
      * @throws DatabaseConnectionException
      */
@@ -173,29 +193,33 @@ class ResetDatabaseCommand extends Command
     {
         $this->databaseCreator->createDatabase(
             $input->getOption(self::DB_HOST),
-            (int) $input->getOption(self::DB_PORT),
+            (int)$input->getOption(self::DB_PORT),
             $input->getOption(self::DB_USER),
             $input->getOption(self::DB_PASSWORD),
-            $input->getOption(self::DB_NAME));
+            $input->getOption(self::DB_NAME)
+        );
     }
 
     /**
      * @param InputInterface $input
+     *
      * @throws InitiateDatabaseException
      */
     private function initializeDatabase(InputInterface $input): void
     {
         $this->databaseInitiator->initiateDatabase(
             $input->getOption(self::DB_HOST),
-            (int) $input->getOption(self::DB_PORT),
+            (int)$input->getOption(self::DB_PORT),
             $input->getOption(self::DB_USER),
             $input->getOption(self::DB_PASSWORD),
-            $input->getOption(self::DB_NAME));
+            $input->getOption(self::DB_NAME)
+        );
         $this->generateViews();
     }
 
     /**
      * @param InputInterface $input
+     *
      * @return bool
      */
     private function databaseExist(InputInterface $input): bool
