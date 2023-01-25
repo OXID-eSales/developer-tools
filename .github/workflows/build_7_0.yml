@@ -1,10 +1,10 @@
-name: Development
+name: Development - 7.0.x
 
 on:
   push:
     branches:
       - b-7.0.x
-      - b-6.5.x
+  workflow_dispatch:
 
 jobs:
   install_shop:
@@ -18,11 +18,11 @@ jobs:
       - name: Clone testing environment (master)
         run: git clone --depth 1 https://github.com/OXID-eSales/docker-eshop-sdk.git --branch master --single-branch .
 
-      - name: Clone the shop (${{ github.ref_name }})
-        run: git clone --depth 1 https://github.com/OXID-eSales/oxideshop_ce.git --branch ${{ github.ref_name }} --single-branch source
+      - name: Clone the shop (b-7.0.x)
+        run: git clone --depth 1 https://github.com/OXID-eSales/oxideshop_ce.git --branch b-7.0.x --single-branch source
 
       - name: Cache current installation
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ./*
@@ -73,8 +73,11 @@ jobs:
       - name: Install dependencies (shop)
         run: docker-compose exec -T php composer update --no-interaction
 
+      - name: Install current branch of the developer-tools
+        run: docker-compose exec -T php composer require oxid-esales/developer-tools:dev-${{ github.ref_name }} --no-update
+
       - name: Reset shop
-        run: docker-compose exec -T php php vendor/bin/reset-shop
+        run: docker-compose exec -T php php bin/oe-console oe:database:reset --db-host=mysql --db-port=3306 --db-name=example --db-user=root --db-password=root --force
 
       - name: Stop containers
         run: |
