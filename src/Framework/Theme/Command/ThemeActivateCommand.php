@@ -48,7 +48,7 @@ class ThemeActivateCommand extends Command
         if (!$theme->load($themeId)) {
             $output->writeLn('<error>' . sprintf(static::MESSAGE_THEME_NOT_FOUND, $themeId) . '</error>');
 
-            return 0;
+            return Command::INVALID;
         }
 
         if ($theme->getActiveThemeId() == $themeId) {
@@ -66,8 +66,9 @@ class ThemeActivateCommand extends Command
             $output->writeLn('<info>' . sprintf(static::MESSAGE_THEME_ACTIVATED, $themeId) . '</info>');
         } catch (EshopStandardException $exception) {
             $output->writeLn('<error>' . $exception->getMessage() . '</error>');
+            return Command::FAILURE;
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 }
