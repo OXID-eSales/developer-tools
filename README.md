@@ -43,6 +43,14 @@ bin/oe-console oe:database:reset --db-host=localhost --db-port=3306 --db-name=te
 
 ATTENTION: After running this command, all you data will be deleted from the database. Never run this command on life system.
 
+### Activating theme
+To activate theme execute:
+
+```bash
+bin/oe-console oe:theme:activate THEME-ID
+```
+
+
 ## How to install component for development?
 
 Checkout component besides OXID eShop `source` directory:

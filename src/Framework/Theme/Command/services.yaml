@@ -1,0 +1,9 @@
+services:
+    _defaults:
+        autowire: true
+        public: false
+
+    OxidEsales\DeveloperTools\Framework\Theme\Command\ThemeActivateCommand:
+        class: OxidEsales\DeveloperTools\Framework\Theme\Command\ThemeActivateCommand
+        tags:
+            - { name: 'console.command', command: 'oe:theme:activate' }
