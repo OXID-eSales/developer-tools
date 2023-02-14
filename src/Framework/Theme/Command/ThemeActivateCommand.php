@@ -22,9 +22,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ThemeActivateCommand extends Command
 {
-    public const MESSAGE_THEME_IS_ACTIVE = 'Theme - "%s" is already activate.';
-    public const MESSAGE_THEME_ACTIVATED = 'Theme - "%s" was activated.';
-    public const MESSAGE_THEME_NOT_FOUND = 'Theme - "%s" not found.';
+    private const MESSAGE_THEME_IS_ACTIVE = 'Theme - "%s" is already activate.';
+    private const MESSAGE_THEME_ACTIVATED = 'Theme - "%s" was activated.';
+    private const MESSAGE_THEME_NOT_FOUND = 'Theme - "%s" not found.';
 
     /**
      * @inheritdoc
@@ -46,7 +46,7 @@ class ThemeActivateCommand extends Command
 
         $theme = oxNew(EshopTheme::class);
         if (!$theme->load($themeId)) {
-            $output->writeLn('<error>' . sprintf(static::MESSAGE_THEME_NOT_FOUND, $themeId) . '</error>');
+            $output->writeLn('<error>' . sprintf(self::MESSAGE_THEME_NOT_FOUND, $themeId) . '</error>');
 
             return Command::INVALID;
         }
@@ -63,7 +63,7 @@ class ThemeActivateCommand extends Command
             $cache = oxNew(EshopContentCache::class);
             $cache->reset(false);
 
-            $output->writeLn('<info>' . sprintf(static::MESSAGE_THEME_ACTIVATED, $themeId) . '</info>');
+            $output->writeLn('<info>' . sprintf(self::MESSAGE_THEME_ACTIVATED, $themeId) . '</info>');
         } catch (EshopStandardException $exception) {
             $output->writeLn('<error>' . $exception->getMessage() . '</error>');
             return Command::FAILURE;
