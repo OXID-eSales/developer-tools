@@ -43,7 +43,7 @@ final class ThemeActivateCommandTest extends TestCase
         $exitCode = $commandTester->execute($arguments);
 
         $this->assertSame(Command::SUCCESS, $exitCode);
-        $this->assertStringContainsString(sprintf('Theme - "%s" is already activ.', $themeId), $commandTester->getDisplay());
+        $this->assertStringContainsString(sprintf('Theme - "%s" is already active.', $themeId), $commandTester->getDisplay());
     }
 
     public function testNonExistingThemeActivation(): void
