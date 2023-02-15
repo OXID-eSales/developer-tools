@@ -31,6 +31,21 @@ final class ThemeActivateCommandTest extends TestCase
         $this->assertSame(Command::SUCCESS, $exitCode);
     }
 
+    public function testThemeAlreadyActivated(): void
+    {
+        $themeId = 'twig';
+        $arguments = ['theme-id' => $themeId];
+
+        $themeActivateCommand = new ThemeActivateCommand();
+        $commandTester = new CommandTester($themeActivateCommand);
+
+        $commandTester->execute($arguments);
+        $exitCode = $commandTester->execute($arguments);
+
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        $this->assertStringContainsString(sprintf('Theme - "%s" is already activ.', $themeId), $commandTester->getDisplay());
+    }
+
     public function testNonExistingThemeActivation(): void
     {
         $themeId = 'sime-theme-id';
@@ -42,7 +57,7 @@ final class ThemeActivateCommandTest extends TestCase
         $exitCode = $commandTester->execute($arguments);
 
         $this->assertSame(Command::INVALID, $exitCode);
-        $this->assertStringContainsString(sprintf(ThemeActivateCommand::MESSAGE_THEME_NOT_FOUND, $themeId), $commandTester->getDisplay());
+        $this->assertStringContainsString(sprintf('Theme - "%s" not found.', $themeId), $commandTester->getDisplay());
     }
 
     public function testThemeActivationWithoutArguments(): void

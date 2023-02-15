@@ -22,7 +22,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ThemeActivateCommand extends Command
 {
-    private const MESSAGE_THEME_IS_ACTIVE = 'Theme - "%s" is already activate.';
+    private const MESSAGE_THEME_IS_ACTIVE = 'Theme - "%s" is already active.';
     private const MESSAGE_THEME_ACTIVATED = 'Theme - "%s" was activated.';
     private const MESSAGE_THEME_NOT_FOUND = 'Theme - "%s" not found.';
 
