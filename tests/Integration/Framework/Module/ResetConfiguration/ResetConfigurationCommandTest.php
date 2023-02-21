@@ -21,7 +21,7 @@ use OxidEsales\EshopCommunity\Tests\Integration\Internal\Framework\Console\Conso
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\ArrayInput;
-use Webmozart\PathUtil\Path;
+use Symfony\Component\Filesystem\Path;
 
 final class ResetConfigurationCommandTest extends TestCase
 {
