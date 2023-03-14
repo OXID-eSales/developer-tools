@@ -10,40 +10,18 @@ declare(strict_types=1);
 namespace OxidEsales\DeveloperTools\Framework\Module\ResetConfiguration;
 
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Dao\ShopConfigurationDaoInterface;
-use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\DataObject\ModuleConfiguration;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Install\Service\ModuleConfigurationInstallerInterface;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Install\Service\ProjectConfigurationGeneratorInterface;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Path\ModulePathResolverInterface;
-use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
-use Symfony\Component\Filesystem\Path;
 
 class ConfigurationResettingService implements ConfigurationResettingServiceInterface
 {
-    /** @var ModuleConfigurationInstallerInterface */
-    private $moduleConfigurationInstaller;
-    /** @var ModulePathResolverInterface */
-    private $modulePathResolver;
-    /** @var ShopConfigurationDaoInterface */
-    private $shopConfigurationDao;
-    /** @var ProjectConfigurationGeneratorInterface */
-    private $projectConfigurationGenerator;
-    /**
-     * @var ContextInterface
-     */
-    private $context;
-
     public function __construct(
-        ModuleConfigurationInstallerInterface $moduleConfigurationInstaller,
-        ModulePathResolverInterface $modulePathResolver,
-        ShopConfigurationDaoInterface $shopConfigurationDao,
-        ProjectConfigurationGeneratorInterface $projectConfigurationGenerator,
-        ContextInterface $context
+        private ModuleConfigurationInstallerInterface $moduleConfigurationInstaller,
+        private ModulePathResolverInterface $modulePathResolver,
+        private ShopConfigurationDaoInterface $shopConfigurationDao,
+        private ProjectConfigurationGeneratorInterface $projectConfigurationGenerator,
     ) {
-        $this->moduleConfigurationInstaller = $moduleConfigurationInstaller;
-        $this->modulePathResolver = $modulePathResolver;
-        $this->shopConfigurationDao = $shopConfigurationDao;
-        $this->projectConfigurationGenerator = $projectConfigurationGenerator;
-        $this->context = $context;
     }
 
     public function reset(): void
@@ -94,7 +72,6 @@ class ConfigurationResettingService implements ConfigurationResettingServiceInte
 
     private function resetConfigurationStorage(): void
     {
-        $this->shopConfigurationDao->deleteAll();
         $this->projectConfigurationGenerator->generate();
     }
 }
