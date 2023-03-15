@@ -9,9 +9,9 @@ declare(strict_types=1);
 
 namespace OxidEsales\DeveloperTools\Framework\Theme\Command;
 
-use OxidEsales\Eshop\Core\Cache\DynamicContent\ContentCache as EshopContentCache;
 use OxidEsales\Eshop\Core\Exception\StandardException as EshopStandardException;
 use OxidEsales\Eshop\Core\Theme as EshopTheme;
+use OxidEsales\EshopCommunity\Internal\Framework\Templating\Cache\TemplateCacheServiceInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -25,6 +25,12 @@ class ThemeActivateCommand extends Command
     private const MESSAGE_THEME_IS_ACTIVE = 'Theme - "%s" is already active.';
     private const MESSAGE_THEME_ACTIVATED = 'Theme - "%s" was activated.';
     private const MESSAGE_THEME_NOT_FOUND = 'Theme - "%s" not found.';
+
+    public function __construct(
+        private TemplateCacheServiceInterface $templateCacheService,
+    ) {
+        parent::__construct();
+    }
 
     /**
      * @inheritdoc
@@ -59,9 +65,7 @@ class ThemeActivateCommand extends Command
 
         try {
             $theme->activate();
-
-            $cache = oxNew(EshopContentCache::class);
-            $cache->reset(false);
+            $this->templateCacheService->invalidateTemplateCache();
 
             $output->writeLn('<info>' . sprintf(self::MESSAGE_THEME_ACTIVATED, $themeId) . '</info>');
         } catch (EshopStandardException $exception) {

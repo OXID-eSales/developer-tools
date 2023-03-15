@@ -11,6 +11,7 @@ namespace OxidEsales\DeveloperTools\Tests\Integration\Framework\Theme\Command;
 
 use ArgumentCountError;
 use OxidEsales\DeveloperTools\Framework\Theme\Command\ThemeActivateCommand;
+use OxidEsales\EshopCommunity\Internal\Framework\Templating\Cache\TemplateCacheServiceInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
@@ -23,7 +24,10 @@ final class ThemeActivateCommandTest extends TestCase
         $themeId = 'twig';
         $arguments = ['theme-id' => $themeId];
 
-        $themeActivateCommand = new ThemeActivateCommand();
+        $templateCacheClearServiceMock = $this->createPartialMock(TemplateCacheServiceInterface::class, ['invalidateTemplateCache']);
+        $templateCacheClearServiceMock->expects($this->atLeastOnce())->method('invalidateTemplateCache');
+
+        $themeActivateCommand = $this->getSut($templateCacheClearServiceMock);
         $commandTester = new CommandTester($themeActivateCommand);
 
         $exitCode = $commandTester->execute($arguments);
@@ -36,7 +40,7 @@ final class ThemeActivateCommandTest extends TestCase
         $themeId = 'twig';
         $arguments = ['theme-id' => $themeId];
 
-        $themeActivateCommand = new ThemeActivateCommand();
+        $themeActivateCommand = $this->getSut();
         $commandTester = new CommandTester($themeActivateCommand);
 
         $commandTester->execute($arguments);
@@ -51,7 +55,7 @@ final class ThemeActivateCommandTest extends TestCase
         $themeId = 'sime-theme-id';
         $arguments = ['theme-id' => $themeId];
 
-        $themeActivateCommand = new ThemeActivateCommand();
+        $themeActivateCommand = $this->getSut();
         $commandTester = new CommandTester($themeActivateCommand);
 
         $exitCode = $commandTester->execute($arguments);
@@ -62,12 +66,12 @@ final class ThemeActivateCommandTest extends TestCase
 
     public function testThemeActivationWithoutArguments(): void
     {
-        $themeActivateCommand = new ThemeActivateCommand();
+        $themeActivateCommand = $this->getSut();
         $commandTester = new CommandTester($themeActivateCommand);
 
         $this->expectException(ArgumentCountError::class);
 
-        $exitCode = $commandTester->execute();
+        $commandTester->execute();
     }
 
     public function testThemeActivationWithWrongArgument(): void
@@ -75,11 +79,18 @@ final class ThemeActivateCommandTest extends TestCase
         $themeId = 'sime-theme-id';
         $arguments = ['themeid' => $themeId];
 
-        $themeActivateCommand = new ThemeActivateCommand();
+        $themeActivateCommand = $this->getSut();
         $commandTester = new CommandTester($themeActivateCommand);
 
         $this->expectException(InvalidArgumentException::class);
 
-        $exitCode = $commandTester->execute($arguments);
+        $commandTester->execute($arguments);
+    }
+
+    protected function getSut(?TemplateCacheServiceInterface $templateCacheServiceInterfaceMock = null)
+    {
+        return new ThemeActivateCommand(
+            templateCacheService: $templateCacheServiceInterfaceMock ?? $this->createStub(TemplateCacheServiceInterface::class)
+        );
     }
 }
