@@ -9,109 +9,90 @@ declare(strict_types=1);
 
 namespace OxidEsales\DeveloperTools\Tests\Integration\Framework\Module\ResetConfiguration;
 
-use OxidEsales\Eshop\Core\DatabaseProvider;
-use OxidEsales\EshopCommunity\Internal\Framework\Config\Dao\ShopConfigurationSettingDaoInterface;
-use OxidEsales\EshopCommunity\Internal\Framework\Config\DataObject\ShopConfigurationSetting;
-use OxidEsales\EshopCommunity\Internal\Framework\Config\DataObject\ShopSettingType;
-use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Dao\ModuleConfigurationDaoInterface;
+use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
+use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ShopConfigurationDaoBridgeInterface;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Install\DataObject\OxidEshopPackage;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Install\Service\ModuleInstallerInterface;
-use OxidEsales\EshopCommunity\Tests\ContainerTrait;
-use OxidEsales\EshopCommunity\Tests\Integration\Internal\Framework\Console\ConsoleTrait;
+use OxidEsales\EshopCommunity\Internal\Framework\Module\Setup\Bridge\ModuleActivationBridgeInterface;
+use OxidEsales\Facts\Facts;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Input\ArrayInput;
+use Psr\Container\ContainerInterface;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Filesystem\Path;
 
 final class ResetConfigurationCommandTest extends TestCase
 {
-    use ContainerTrait;
-    use ConsoleTrait;
+    private string $moduleId = 'some-module';
+    private string $settingName = 'some-setting';
+    private string $defaultValueFromMetadata = 'some-default-value';
+    private int $shopId = 1;
+    private string $path;
+    private Filesystem $fileSystem;
 
-    /** @var string  */
-    private $moduleId = 'some-module';
-    /** @var int  */
-    private $shopId = 1;
-
-    public function setUp(): void
+    public function testResetConfiguration(): void
     {
-        parent::setUp();
-        $this->beginTransaction();
+        exec($this->path . "/bin/oe-console oe:module:reset-configurations");
+        $shopConfiguration = $this->getContainer()->get(ShopConfigurationDaoBridgeInterface::class);
+        $moduleConfig = $shopConfiguration->get()->getModuleConfigurations()[$this->moduleId];
+        $this->assertSame($this->moduleId, $moduleConfig->getId());
+
+        $setting = $moduleConfig->getModuleSetting($this->settingName);
+        $value = $setting->getValue();
+        $this->assertSame($this->defaultValueFromMetadata, $value);
     }
 
-    public function tearDown(): void
+    protected function setUp(): void
     {
-        $this->rollBackTransaction();
+        $this->installModule();
+        $this->path = (new Facts())->getShopRootPath();
+        $this->fileSystem = new Filesystem();
+        $this->createConfigBackup();
+        parent::setUp();
+    }
+
+    protected function tearDown(): void
+    {
+        $this->restoreConfigBackup();
+        $this->getContainer()->get(ModuleInstallerInterface::class)
+            ->uninstall(
+                new OxidEshopPackage(Path::join(__DIR__, '/Fixtures', 'TestModule'))
+            );
         parent::tearDown();
     }
 
-    public function testResetWithConfigModificationWillReturnInitialValue(): void
+    private function installModule(): void
     {
-        $settingName = 'some-setting';
-        $defaultValueFromMetadata = 'some-default-value';
-
-        $this->installTestModule();
-        $configurationDao = $this->get(ModuleConfigurationDaoInterface::class);
-        $configuration = $configurationDao->get($this->moduleId, $this->shopId);
-        $setting = $configuration->getModuleSetting($settingName);
-        $setting->setValue('new-value');
-        $configurationDao->save($configuration, $this->shopId);
-
-        $this->execute(
-            $this->getApplication(),
-            $this->get('oxid_esales.console.commands_provider.services_commands_provider'),
-            new ArrayInput(['command' => 'oe:module:reset-configurations'])
-        );
-        $configuration = $configurationDao->get($this->moduleId, $this->shopId);
-        $setting = $configuration->getModuleSetting($settingName);
-        $value = $setting->getValue();
-
-        $this->assertSame($defaultValueFromMetadata, $value);
-    }
-
-    private function installTestModule(): void
-    {
-        $this->get(ModuleInstallerInterface::class)
+        $this->getContainer()->get(ModuleInstallerInterface::class)
             ->install(
-                new OxidEshopPackage(Path::join(__DIR__ . '/Fixtures', 'TestModule'))
-            );
-    }
-
-    private function cleanupTestData(): void
-    {
-        $this
-            ->get(ModuleInstallerInterface::class)
-            ->uninstall(
-                new OxidEshopPackage(
-                    Path::join(__DIR__ . '/Fixtures', 'TestModule')
-                )
+                new OxidEshopPackage(Path::join(__DIR__, '/Fixtures', 'TestModule'))
             );
 
-        $activeModules = new ShopConfigurationSetting();
-        $activeModules
-            ->setName(ShopConfigurationSetting::ACTIVE_MODULES)
-            ->setValue([])
-            ->setShopId(1)
-            ->setType(ShopSettingType::ASSOCIATIVE_ARRAY);
-        $this->get(ShopConfigurationSettingDaoInterface::class)->save($activeModules);
+        $this->getContainer()->get(ModuleActivationBridgeInterface::class)
+            ->activate($this->moduleId, $this->shopId);
     }
 
-    protected function getApplication(): Application
+    private function getContainer(): ContainerInterface
     {
-        $application = $this->get('oxid_esales.console.symfony.component.console.application');
-        $application->setAutoExit(false);
-        return $application;
-    }
-    private function beginTransaction()
-    {
-        DatabaseProvider::getDb()->startTransaction();
+        return ContainerFactory::getInstance()->getContainer();
     }
 
-    private function rollBackTransaction()
+    private function createConfigBackup(): void
     {
-        if (DatabaseProvider::getDb()->isTransactionActive()) {
-            DatabaseProvider::getDb()->rollbackTransaction();
+        $this->fileSystem->mirror(
+            Path::join($this->path, "var/configuration"),
+            Path::join($this->path, "var/configuration_bkp")
+        );
+    }
+
+    private function restoreConfigBackup(): void
+    {
+        if (file_exists(Path::join($this->path, "var/configuration"))) {
+            $this->fileSystem->remove(Path::join($this->path, "var/configuration"));
         }
-    }
 
+        $this->fileSystem->rename(
+            Path::join($this->path, "/var/configuration_bkp"),
+            Path::join($this->path, "/var/configuration")
+        );
+    }
 }
