@@ -113,23 +113,18 @@ jobs:
           make up
           sleep 2
 
-      - name: Prepare for PHP_CS check
+      - name: Doing PHP_CS check
         run: |
           DT_ROOT="/var/www/vendor/oxid-esales/developer-tools/"
           echo "DT_ROOT=$DT_ROOT" >> $GITHUB_ENV
           cd source/vendor/oxid-esales/developer-tools
-          git diff --name-only origin/${{ github.ref_name }} HEAD~1 | grep '\.php$' > changed-files.txt
-          echo "--- changed files ---"
+          git diff --name-only origin/${{ github.ref_name }} HEAD~1 | grep '\.php$' > changed-files.txt || true
           perl -pi -e "s#^#$DT_ROOT#" changed-files.txt
-
-      - name: Doing PHP_CS check
-        run: |
-          if test -f "source/vendor/oxid-esales/developer-tools/changed-files.txt"; then
+          if [[ -f "changed-files.txt" && -s "changed-files.txt" ]]; then
+             cd ../../../../
              docker-compose exec -T php vendor/bin/phpcs --standard=psr12 --file-list=vendor/oxid-esales/developer-tools/changed-files.txt \
               | tee phpcs_PHP${{ matrix.php }}_MYSQL${{ matrix.mysql }}_codesniff_log.txt  || true
-
-             rm source/vendor/oxid-esales/developer-tools/changed-files.txt
-
+             rm source/vendor/oxid-esales/developer-tools/changed-files.txt || true
              if grep -q -Ei 'fail|\\.\\=\\=|Warning|Notice|Deprecated|Fatal|Error' phpcs_PHP${{ matrix.php }}_MYSQL${{ matrix.mysql }}_codesniff_log.txt; then 
                 exit 1; 
              fi
