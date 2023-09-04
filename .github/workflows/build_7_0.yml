@@ -9,8 +9,8 @@ jobs:
   install_shop:
     strategy:
       matrix:
-        php: [ '8.0', '8.1' ]
-        mysql: [ '5.7' ]
+        php: [ '8.1', '8.2' ]
+        mysql: [ '5.7', '8.0' ]
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
@@ -93,8 +93,8 @@ jobs:
   integration_tests:
     strategy:
       matrix:
-        php: [ '8.0', '8.1' ]
-        mysql: [ '5.7']
+        php: [ '8.1', '8.2' ]
+        mysql: [ '5.7', '8.0' ]
       fail-fast: false
     needs: [ install_shop ]
     runs-on: ubuntu-latest
