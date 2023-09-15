@@ -18,7 +18,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Command activates theme by theme id.
+ * @deprecated Since v2.4 (dev-b-7.1.x)
+ * @see OxidEsales\EshopCommunity\Internal\Framework\Theme\Command\ThemeActivateCommand
  */
 class ThemeActivateCommand extends Command
 {
