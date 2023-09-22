@@ -118,7 +118,7 @@ jobs:
           DT_ROOT="/var/www/vendor/oxid-esales/developer-tools/"
           echo "DT_ROOT=$DT_ROOT" >> $GITHUB_ENV
           cd source/vendor/oxid-esales/developer-tools
-          git diff --name-only origin/${{ github.ref_name }} HEAD~1 | grep '\.php$' > changed-files.txt | while read file; do
+          git diff --name-only --diff-filter=AM origin/${{ github.ref_name }} HEAD~1 | grep '\.php$' > changed-files.txt | while read file; do
             if [[ -f "$file" ]]; then
               echo "$file"
             fi
