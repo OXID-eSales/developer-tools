@@ -4,7 +4,10 @@ services:
         public: false
 
     OxidEsales\DeveloperTools\Framework\Theme\Command\ThemeActivateCommand:
-        deprecated: 'This service is deprecated. See OxidEsales\EshopCommunity\Internal\Framework\Theme\Command\ThemeActivateCommand instead'
+        deprecated:
+            package: 'oxid-esales/developer-tools'
+            version: '2.4.0'
+            message: 'The "%service_id%" service is deprecated.'
         class: OxidEsales\DeveloperTools\Framework\Theme\Command\ThemeActivateCommand
         tags:
             - { name: 'console.command', command: 'oe:theme:activate' }
