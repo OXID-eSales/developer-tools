@@ -68,7 +68,7 @@ final class ResetDatabaseCommandTest extends TestCase
         $commandTester->execute($options);
     }
 
-    public function missingOptions(): array
+    public static function missingOptions(): array
     {
         return [
             'Missing db-host'     => ['--db-host'],

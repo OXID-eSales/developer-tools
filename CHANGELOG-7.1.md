@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [v2.4.0] - unreleased
 
+### Added
+- PHPUnit v10 support
+
+### Removed
+- PHPUnit v9 support
+
 ### Deprecated
 - Theme activation command
 
