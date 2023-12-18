@@ -1,9 +1,5 @@
 # Change Log for OXID developer tools component
 
-All notable changes to this project will be documented in this file.
-The format is based on [Keep a Changelog](http://keepachangelog.com/)
-and this project adheres to [Semantic Versioning](http://semver.org/).
-
 ## [v2.4.0] - unreleased
 
 ### Added
@@ -40,18 +36,3 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Module path issue in codeception
-- 
-## [v1.1.0] - 2022-07-19
-
-### Added
-- Compatibility with Symfony v5
-
-## [v1.0.1] - 2020-04-21
-
-### Fixed
-- Updated method signatures
-
-## [v1.0.0] - 2019-11-20
-
-### Added
-- Reset configuration command
