@@ -16,5 +16,8 @@
     "psr-4": {
       "OxidEsales\\DeveloperTools\\Tests\\": "./tests"
     }
+  },
+  "require": {
+    "mikey179/vfsstream": "~1.6.8"
   }
 }
