@@ -41,7 +41,7 @@ Example:
 bin/oe-console oe:database:reset --db-host=localhost --db-port=3306 --db-name=test --db-user=test --db-password=test 
 ```
 
-ATTENTION: After running this command, all you data will be deleted from the database. Never run this command on life system.
+ATTENTION: After running this command, all your data will be deleted from the database. Never run this command on life system.
 
 ### Activating theme
 To activate theme execute:
