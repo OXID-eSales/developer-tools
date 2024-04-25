@@ -13,21 +13,10 @@ use OxidEsales\EshopCommunity\Internal\Setup\Database\Exception\DatabaseConnecti
 use PDO;
 use Throwable;
 
-/**
- * Class DropDatabaseService
- *
- * @package OxidEsales\DeveloperTools\Framework\Database\Service
- */
 class DropDatabaseService implements DropDatabaseServiceInterface
 {
     /**
-     * @param string $host
-     * @param int    $port
-     * @param string $username
-     * @param string $password
-     * @param string $name
-     *
-     * @throws DatabaseConnectionException
+     * @inheritDoc
      */
     public function dropDatabase(string $host, int $port, string $username, string $password, string $name): void
     {
@@ -35,14 +24,6 @@ class DropDatabaseService implements DropDatabaseServiceInterface
             ->exec('DROP DATABASE ' . $name . ';');
     }
 
-    /**
-     * @param string $host
-     * @param int $port
-     * @param string $username
-     * @param string $password
-     * @return PDO
-     * @throws DatabaseConnectionException
-     */
     private function getDatabaseConnection(string $host, int $port, string $username, string $password): PDO
     {
         try {

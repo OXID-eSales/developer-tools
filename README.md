@@ -2,6 +2,9 @@
 
 This component contains additional developer tools for OXID eShop.
 
+__ATTENTION:__ this component was designed for development purposes and its usage may lead to data loss in your system.
+__Never execute developer tool commands in any live environment!__
+
 ## Installation
 
 Run the following command to install the component:
@@ -23,32 +26,10 @@ bin/oe-console oe:module:reset-configurations
 To reset the database to its initial state run the following command:
 
 ```bash
-bin/oe-console oe:database:reset --db-host DB-HOST --db-port DB-PORT --db-name DB-NAME --db-user DB-USER --db-password DB-PASSWORD [--force]
+bin/oe-console oe:database:reset [--force]
 ```
 
-Which:
-
-    - <db-host> is the database host
-    - <db-port> is the database port
-    - <db-name> is the database name
-    - <db-user> is the database username
-    - <db-password> is the database password
-    - [<force>] (optional) if set runs the command without confirmation
-
-Example:
-
-```bash
-bin/oe-console oe:database:reset --db-host=localhost --db-port=3306 --db-name=test --db-user=test --db-password=test 
-```
-
-ATTENTION: After running this command, all your data will be deleted from the database. Never run this command on life system.
-
-### Activating theme
-To activate theme execute:
-
-```bash
-bin/oe-console oe:theme:activate THEME-ID
-```
+_When executed, this command will use the actual database settings, active in your current system environment._
 
 
 ## How to install component for development?

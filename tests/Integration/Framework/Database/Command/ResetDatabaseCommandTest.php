@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace OxidEsales\DeveloperTools\Tests\Integration\Framework\Database\Command;
 
-use InvalidArgumentException;
 use OxidEsales\DeveloperTools\Framework\Database\Command\ResetDatabaseCommand;
 use OxidEsales\DeveloperTools\Framework\Database\Service\DropDatabaseServiceInterface;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\Exception\DatabaseExistsAndNotEmptyException;
@@ -17,7 +16,6 @@ use OxidEsales\EshopCommunity\Internal\Setup\Database\Exception\DatabaseExistsEx
 use OxidEsales\EshopCommunity\Internal\Setup\Database\Service\DatabaseCheckerInterface;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\Service\DatabaseCreatorInterface;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\Service\DatabaseInitiatorInterface;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Console\Application;
@@ -34,63 +32,22 @@ final class ResetDatabaseCommandTest extends TestCase
     private const DB_USER = 'some-db-user';
     private const DB_PASS = 'some-db-pass';
 
-    private array $arguments = [
-        '--db-host'     => self::HOST,
-        '--db-port'     => self::PORT,
-        '--db-name'     => self::DB,
-        '--db-user'     => self::DB_USER,
-        '--db-password' => self::DB_PASS,
-    ];
-
-    #[DataProvider('missingOptions')]
-    public function testExecuteWithMissingArgs(string $command): void
-    {
-        $options = [
-            '--db-host'     => self::HOST,
-            '--db-port'     => self::PORT,
-            '--db-name'     => self::DB,
-            '--db-user'     => self::DB_USER,
-            '--db-password' => self::DB_PASS,
-        ];
-
-        $this->expectException(InvalidArgumentException::class);
-
-        $databaseSetupCommand = new ResetDatabaseCommand(
-            $this->getDatabaseCheckerMock(),
-            $this->getDatabaseCreatorMock(),
-            $this->getDatabaseInstallerMock(),
-            $this->getDropDatabaseServiceMock()
-        );
-        $commandTester = new CommandTester($databaseSetupCommand);
-        unset($options[$command]);
-
-        $commandTester->execute($options);
-    }
-
-    public static function missingOptions(): array
-    {
-        return [
-            'Missing db-host'     => ['--db-host'],
-            'Missing db-port'     => ['--db-port'],
-            'Missing db-name'     => ['--db-name'],
-            'Missing db-user'     => ['--db-user'],
-            'Missing db-password' => ['--db-password'],
-        ];
-    }
-
     public function testExecuteWithExistingDatabaseAndWithForceParameter(): void
     {
         $databaseSetupCommand = new ResetDatabaseCommand(
             $this->getDatabaseCheckerWithExceptionMock(),
             $this->getDatabaseCreatorMock(),
             $this->getDatabaseInstallerMock(),
-            $this->getDropDatabaseServiceMock()
+            $this->getDropDatabaseServiceMock(),
+            self::HOST,
+            self::DB,
+            self::DB_USER,
+            self::DB_PASS,
+            self::PORT,
         );
         $commandTester = new CommandTester($databaseSetupCommand);
 
-        $arguments = $this->arguments;
-        $arguments['--force'] = true;
-        $exitCode = $commandTester->execute($arguments);
+        $exitCode = $commandTester->execute(['--force' => true]);
 
         $this->assertSame(Command::SUCCESS, $exitCode);
         $this->assertStringContainsString('Reset has been finished', $commandTester->getDisplay());
@@ -102,11 +59,16 @@ final class ResetDatabaseCommandTest extends TestCase
             $this->getDatabaseCheckerMock(),
             $this->getDatabaseCreatorMock(),
             $this->getDatabaseInstallerMock(),
-            $this->getDropDatabaseServiceMock()
+            $this->getDropDatabaseServiceMock(),
+            self::HOST,
+            self::DB,
+            self::DB_USER,
+            self::DB_PASS,
+            self::PORT,
         );
         $commandTester = new CommandTester($databaseSetupCommand);
 
-        $exitCode = $commandTester->execute($this->arguments);
+        $exitCode = $commandTester->execute([]);
 
         $this->assertSame(Command::SUCCESS, $exitCode);
         $this->assertStringContainsString('Reset has been finished', $commandTester->getDisplay());
@@ -117,7 +79,7 @@ final class ResetDatabaseCommandTest extends TestCase
         $commandTester = new CommandTester($this->getCommandWithInteraction());
         $commandTester->setInputs(['yes']);
 
-        $exitCode = $commandTester->execute($this->arguments);
+        $exitCode = $commandTester->execute([]);
 
         $this->assertSame(Command::SUCCESS, $exitCode);
         $this->assertStringContainsString('Reset has been finished', $commandTester->getDisplay());
@@ -127,7 +89,7 @@ final class ResetDatabaseCommandTest extends TestCase
     {
         $commandTester = new CommandTester($this->getCommandWithInteraction());
         $commandTester->setInputs(['no']);
-        $exitCode = $commandTester->execute($this->arguments);
+        $exitCode = $commandTester->execute([]);
 
         $this->assertSame(Command::SUCCESS, $exitCode);
         $this->assertStringContainsString('Reset has been canceled', $commandTester->getDisplay());
@@ -139,13 +101,38 @@ final class ResetDatabaseCommandTest extends TestCase
             $this->getDatabaseCheckerMock(),
             $this->getDatabaseCreatorWithExceptionMock(),
             $this->getDatabaseInstallerMock(),
-            $this->getDropDatabaseServiceMock()
+            $this->getDropDatabaseServiceMock(),
+            self::HOST,
+            self::DB,
+            self::DB_USER,
+            self::DB_PASS,
+            self::PORT,
         );
         $commandTester = new CommandTester($databaseSetupCommand);
-        $exitCode = $commandTester->execute($this->arguments);
+        $exitCode = $commandTester->execute([]);
 
         $this->assertSame(Command::SUCCESS, $exitCode);
         $this->assertStringContainsString('Reset has been finished', $commandTester->getDisplay());
+    }
+
+    public function testExecuteWithEmptyDatabaseConfigurationWillDisplayError(): void
+    {
+        $databaseSetupCommand = new ResetDatabaseCommand(
+            $this->getDatabaseCheckerMock(),
+            $this->getDatabaseCreatorWithExceptionMock(),
+            $this->getDatabaseInstallerMock(),
+            $this->getDropDatabaseServiceMock(),
+            '',
+            '',
+            '',
+            '',
+            0,
+        );
+        $commandTester = new CommandTester($databaseSetupCommand);
+        $exitCode = $commandTester->execute([]);
+
+        $this->assertSame(Command::FAILURE, $exitCode);
+        $this->assertStringContainsString('Configuration error', $commandTester->getDisplay());
     }
 
     private function getCommandWithInteraction(): Command
@@ -154,7 +141,12 @@ final class ResetDatabaseCommandTest extends TestCase
             $this->getDatabaseCheckerWithExceptionMock(),
             $this->getDatabaseCreatorMock(),
             $this->getDatabaseInstallerMock(),
-            $this->getDropDatabaseServiceMock()
+            $this->getDropDatabaseServiceMock(),
+            self::HOST,
+            self::DB,
+            self::DB_USER,
+            self::DB_PASS,
+            self::PORT,
         );
         $databaseSetupCommand->setName('oe:database:reset');
 

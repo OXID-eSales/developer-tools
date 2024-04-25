@@ -8,3 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Removed
 - Deprecated theme activation command class `ThemeActivateCommand`
+
+### Changed
+- `oe:database:reset` command now  fetches DB connection parameters from the Symfony container.
+All corresponding command-line parameters were removed

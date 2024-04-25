@@ -11,10 +11,10 @@ namespace OxidEsales\DeveloperTools\Framework\Database\Command;
 
 use OxidEsales\DatabaseViewsGenerator\ViewsGenerator;
 use OxidEsales\DeveloperTools\Framework\Database\Service\DropDatabaseServiceInterface;
-use OxidEsales\EshopCommunity\Internal\Framework\Console\Command\NamedArgumentsTrait;
+use OxidEsales\EshopCommunity\Internal\Framework\Configuration\DataObject\DatabaseConfiguration;
+use OxidEsales\EshopCommunity\Internal\Setup\Database\Exception\DatabaseConnectionException;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\Exception\DatabaseExistsAndNotEmptyException;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\Exception\DatabaseExistsException;
-use OxidEsales\EshopCommunity\Internal\Setup\Database\Exception\DatabaseConnectionException;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\Exception\InitiateDatabaseException;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\Service\DatabaseCheckerInterface;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\Service\DatabaseCreatorInterface;
@@ -27,221 +27,151 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 
 class ResetDatabaseCommand extends Command
 {
-    use NamedArgumentsTrait;
-
-    private const DB_HOST = 'db-host';
-    private const DB_PORT = 'db-port';
-    private const DB_NAME = 'db-name';
-    private const DB_USER = 'db-user';
-    private const DB_PASSWORD = 'db-password';
     private const FORCE_RESET = 'force';
-
-    /**
-     * @var DatabaseCheckerInterface
-     */
-    private DatabaseCheckerInterface $databaseChecker;
-
-    /**
-     * @var DatabaseCreatorInterface
-     */
-    private DatabaseCreatorInterface $databaseCreator;
-
-    /**
-     * @var DatabaseInitiatorInterface
-     */
-    private DatabaseInitiatorInterface $databaseInitiator;
-
-    /**
-     * @var DropDatabaseServiceInterface
-     */
-    private DropDatabaseServiceInterface $dropDatabaseService;
+    private DatabaseConfiguration $dbConfig;
 
     public function __construct(
-        DatabaseCheckerInterface $databaseChecker,
-        DatabaseCreatorInterface $databaseCreator,
-        DatabaseInitiatorInterface $databaseInitiator,
-        DropDatabaseServiceInterface $dropDatabaseService
+        private readonly DatabaseCheckerInterface $databaseChecker,
+        private readonly DatabaseCreatorInterface $databaseCreator,
+        private readonly DatabaseInitiatorInterface $databaseInitiator,
+        private readonly DropDatabaseServiceInterface $dropDatabaseService,
     ) {
         parent::__construct();
-
-        $this->databaseChecker = $databaseChecker;
-        $this->databaseCreator = $databaseCreator;
-        $this->databaseInitiator = $databaseInitiator;
-        $this->dropDatabaseService = $dropDatabaseService;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
-            ->addOption(self::DB_HOST, null, InputOption::VALUE_REQUIRED)
-            ->addOption(self::DB_PORT, null, InputOption::VALUE_REQUIRED)
-            ->addOption(self::DB_NAME, null, InputOption::VALUE_REQUIRED)
-            ->addOption(self::DB_USER, null, InputOption::VALUE_REQUIRED)
-            ->addOption(self::DB_PASSWORD, null, InputOption::VALUE_REQUIRED)
             ->addOption(
                 self::FORCE_RESET,
                 null,
                 InputOption::VALUE_NONE,
                 "Don't ask for the deletion of the database, but force the operation to run."
             );
-        $this->setDescription('Performs database reset. <error>ATTENTION: This operation should not be executed in a production environment.</error>');
-
-        $this->setRequiredOptions([
-            self::DB_HOST,
-            self::DB_PORT,
-            self::DB_NAME,
-            self::DB_USER,
-            self::DB_PASSWORD,
-        ]);
+        $this->setDescription(
+            'Performs database reset. '
+            . '<error>ATTENTION: This operation should not be executed in a production environment.</error>'
+        );
     }
 
     /**
-     * @param InputInterface  $input
-     * @param OutputInterface $output
-     *
-     * @return int
      * @throws DatabaseConnectionException
      * @throws DatabaseExistsException
      * @throws InitiateDatabaseException
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->checkRequiredCommandOptions($this->getDefinition()->getOptions(), $input);
-
+        if (empty(getenv('OXID_DB_URL'))) {
+            $output->writeln('<error>Configuration error!</error>');
+            $output->writeln('<comment>Please check your DB connection configuration and try again.</comment>');
+            return Command::FAILURE;
+        }
+        $this->dbConfig = new DatabaseConfiguration((string)getenv('OXID_DB_URL'));
         $output->writeln('<info>Resetting database...</info>');
         $start = microtime(true);
 
-        if ($this->databaseExist($input)) {
-            if (!$this->forceDatabaseReset($input) && !$this->confirmAction($input, $output)) {
+        if ($this->databaseExist()) {
+            if (!$this->databaseResetWasForced($input) && !$this->actionWasConfirmed($input, $output)) {
                 $output->writeln('<info>Reset has been canceled.</info>');
                 return Command::SUCCESS;
             }
             $output->writeln('<info>Dropping existing database...</info>');
-            $this->dropDatabase($input);
+            $this->dropDatabase();
         }
         try {
             $output->writeln('<info>Creating database...</info>');
-            $this->createDatabase($input);
-        } catch (DatabaseExistsException $exception) {
+            $this->createDatabase();
+        } catch (DatabaseExistsException) {
         }
 
         $output->writeln('<info>Initializing database...</info>');
-        $this->initializeDatabase($input);
+        $this->initializeDatabase();
 
         $output->writeln('<info>Reset has been finished in ' . (microtime(true) - $start) . '</info>');
 
         return Command::SUCCESS;
     }
 
-    /**
-     * @param InputInterface  $input
-     * @param OutputInterface $output
-     *
-     * @return bool
-     */
-    private function confirmAction(InputInterface $input, OutputInterface $output): bool
+    private function actionWasConfirmed(InputInterface $input, OutputInterface $output): bool
     {
-        $helper = $this->getHelper('question');
-        $question = new ConfirmationQuestion($this->getQuestionText($input), false);
+        return $this
+            ->getHelper('question')
+            ->ask(
+                $input,
+                $output,
+                new ConfirmationQuestion(
+                    '<question>Seems there is already OXID eShop installed in database '
+                    . "`{$this->dbConfig->getName()}`. "
+                    . 'All data in a given database will be lost when executing this command! '
+                    . 'Continue executing it? [No/yes]: </question>',
+                    false
+                )
+            );
+    }
 
-        return $helper->ask($input, $output, $question);
+    private function databaseResetWasForced(InputInterface $input): bool
+    {
+        return $input->getOption(self::FORCE_RESET);
     }
 
     /**
-     * @param InputInterface $input
-     *
-     * @return string
-     */
-    private function getQuestionText(InputInterface $input): string
-    {
-        return sprintf('Seems there is already OXID eShop installed in database %s. All data in a given database will
-         be lost when executing this command. Continue executing it? [no/yes]', $input->getOption(self::DB_NAME));
-    }
-
-    /**
-     * @param InputInterface $input
-     *
-     * @return bool
-     */
-    private function forceDatabaseReset(InputInterface $input): bool
-    {
-        $value = $input->getOption(self::FORCE_RESET);
-        return isset($value) && $value;
-    }
-
-    /**
-     * @param InputInterface $input
-     *
      * @throws DatabaseConnectionException
      */
-    private function dropDatabase(InputInterface $input): void
+    private function dropDatabase(): void
     {
         $this->dropDatabaseService->dropDatabase(
-            $input->getOption(self::DB_HOST),
-            (int)$input->getOption(self::DB_PORT),
-            $input->getOption(self::DB_USER),
-            $input->getOption(self::DB_PASSWORD),
-            $input->getOption(self::DB_NAME)
+            $this->dbConfig->getHost(),
+            $this->dbConfig->getPort(),
+            $this->dbConfig->getUser(),
+            $this->dbConfig->getPass(),
+            $this->dbConfig->getName(),
         );
     }
 
     /**
-     * @param InputInterface $input
-     *
      * @throws DatabaseExistsException
      * @throws DatabaseConnectionException
      */
-    private function createDatabase(InputInterface $input): void
+    private function createDatabase(): void
     {
         $this->databaseCreator->createDatabase(
-            $input->getOption(self::DB_HOST),
-            (int)$input->getOption(self::DB_PORT),
-            $input->getOption(self::DB_USER),
-            $input->getOption(self::DB_PASSWORD),
-            $input->getOption(self::DB_NAME)
+            $this->dbConfig->getHost(),
+            $this->dbConfig->getPort(),
+            $this->dbConfig->getUser(),
+            $this->dbConfig->getPass(),
+            $this->dbConfig->getName(),
         );
     }
 
     /**
-     * @param InputInterface $input
-     *
      * @throws InitiateDatabaseException
      */
-    private function initializeDatabase(InputInterface $input): void
+    private function initializeDatabase(): void
     {
         $this->databaseInitiator->initiateDatabase(
-            $input->getOption(self::DB_HOST),
-            (int)$input->getOption(self::DB_PORT),
-            $input->getOption(self::DB_USER),
-            $input->getOption(self::DB_PASSWORD),
-            $input->getOption(self::DB_NAME)
+            $this->dbConfig->getHost(),
+            $this->dbConfig->getPort(),
+            $this->dbConfig->getUser(),
+            $this->dbConfig->getPass(),
+            $this->dbConfig->getName(),
         );
-        $this->generateViews();
+
+        (new ViewsGenerator())->generate();
     }
 
-    /**
-     * @param InputInterface $input
-     *
-     * @return bool
-     */
-    private function databaseExist(InputInterface $input): bool
+    private function databaseExist(): bool
     {
         try {
             $this->databaseChecker->canCreateDatabase(
-                $input->getOption(self::DB_HOST),
-                (int)$input->getOption(self::DB_PORT),
-                $input->getOption(self::DB_USER),
-                $input->getOption(self::DB_PASSWORD),
-                $input->getOption(self::DB_NAME)
+                $this->dbConfig->getHost(),
+                $this->dbConfig->getPort(),
+                $this->dbConfig->getUser(),
+                $this->dbConfig->getPass(),
+                $this->dbConfig->getName(),
             );
-        } catch (DatabaseExistsAndNotEmptyException $exception) {
+        } catch (DatabaseExistsAndNotEmptyException) {
             return true;
         }
         return false;
-    }
-
-    private function generateViews(): void
-    {
-        (new ViewsGenerator())->generate();
     }
 }
