@@ -105,7 +105,7 @@ class ResetDatabaseCommand extends Command
      * @throws InitiateDatabaseException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
-    {
+    {   var_dump('Starting execute database reset');
         $this->checkRequiredCommandOptions($this->getDefinition()->getOptions(), $input);
 
         $output->writeln('<info>Resetting database...</info>');
