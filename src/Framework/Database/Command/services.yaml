@@ -7,3 +7,8 @@ services:
         class: OxidEsales\DeveloperTools\Framework\Database\Command\ResetDatabaseCommand
         tags:
             - { name: 'console.command', command: 'oe:database:reset' }
+
+    OxidEsales\DeveloperTools\Framework\Database\Command\CheckDatabaseCommand:
+        class: OxidEsales\DeveloperTools\Framework\Database\Command\CheckDatabaseCommand
+        tags:
+            - { name: 'console.command', command: 'oe:database:check' }
