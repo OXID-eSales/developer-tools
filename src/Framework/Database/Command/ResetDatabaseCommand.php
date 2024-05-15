@@ -109,6 +109,8 @@ class ResetDatabaseCommand extends Command
         $this->checkRequiredCommandOptions($this->getDefinition()->getOptions(), $input);
 
         $output->writeln('<info>Resetting database...</info>');
+        $start = microtime(true);
+
         if ($this->databaseExist($input)) {
             if (!$this->forceDatabaseReset($input) && !$this->confirmAction($input, $output)) {
                 $output->writeln('<info>Reset has been canceled.</info>');
@@ -126,7 +128,7 @@ class ResetDatabaseCommand extends Command
         $output->writeln('<info>Initializing database...</info>');
         $this->initializeDatabase($input);
 
-        $output->writeln('<info>Reset has been finished.</info>');
+        $output->writeln('<info>Reset has been finished in ' . (microtime(true) - $start) . '</info>');
 
         return Command::SUCCESS;
     }
