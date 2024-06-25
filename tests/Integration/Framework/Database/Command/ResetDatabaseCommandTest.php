@@ -94,7 +94,7 @@ final class ResetDatabaseCommandTest extends TestCase
         $exitCode = $commandTester->execute($arguments);
 
         $this->assertSame(Command::SUCCESS, $exitCode);
-        $this->assertStringContainsString('Reset has been finished.', $commandTester->getDisplay());
+        $this->assertStringContainsString('Reset has been finished', $commandTester->getDisplay());
     }
 
     public function testExecuteOnEmptyDatabase(): void
@@ -110,7 +110,7 @@ final class ResetDatabaseCommandTest extends TestCase
         $exitCode = $commandTester->execute($this->arguments);
 
         $this->assertSame(Command::SUCCESS, $exitCode);
-        $this->assertStringContainsString('Reset has been finished.', $commandTester->getDisplay());
+        $this->assertStringContainsString('Reset has been finished', $commandTester->getDisplay());
     }
 
     public function testExecuteWithExistingDatabaseAndConfirmedAction(): void
@@ -131,7 +131,7 @@ final class ResetDatabaseCommandTest extends TestCase
         $exitCode = $commandTester->execute($this->arguments);
 
         $this->assertSame(Command::SUCCESS, $exitCode);
-        $this->assertStringContainsString('Reset has been canceled.', $commandTester->getDisplay());
+        $this->assertStringContainsString('Reset has been canceled', $commandTester->getDisplay());
     }
 
     public function testExecuteWithEmptyExistingDatabase(): void
@@ -146,7 +146,7 @@ final class ResetDatabaseCommandTest extends TestCase
         $exitCode = $commandTester->execute($this->arguments);
 
         $this->assertSame(Command::SUCCESS, $exitCode);
-        $this->assertStringContainsString('Reset has been finished.', $commandTester->getDisplay());
+        $this->assertStringContainsString('Reset has been finished', $commandTester->getDisplay());
     }
 
     private function getCommandWithInteraction(): Command

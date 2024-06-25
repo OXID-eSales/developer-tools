@@ -21,7 +21,7 @@ final class ThemeActivateCommandTest extends TestCase
 {
     public function testThemeActivationOnSuccess(): void
     {
-        $themeId = 'twig';
+        $themeId = 'apex';
         $arguments = ['theme-id' => $themeId];
 
         $templateCacheClearServiceMock = $this->createPartialMock(TemplateCacheServiceInterface::class, ['invalidateTemplateCache']);
@@ -37,7 +37,7 @@ final class ThemeActivateCommandTest extends TestCase
 
     public function testThemeAlreadyActivated(): void
     {
-        $themeId = 'twig';
+        $themeId = 'apex';
         $arguments = ['theme-id' => $themeId];
 
         $themeActivateCommand = $this->getSut();
