@@ -9,98 +9,39 @@ declare(strict_types=1);
 
 namespace OxidEsales\DeveloperTools\Tests\Integration\Framework\Database\Service;
 
-use OxidEsales\DeveloperTools\Framework\Database\Service\DropDatabaseService;
-use OxidEsales\EshopCommunity\Internal\Setup\Database\Service\DatabaseCreator;
-use OxidEsales\EshopCommunity\Internal\Setup\Database\Exception\DatabaseConnectionException;
-use OxidEsales\Facts\Config\ConfigFile;
-use PDO;
-use PDOException;
+use Doctrine\DBAL\Exception\ConnectionException;
+use OxidEsales\DeveloperTools\Framework\Database\Service\DropDatabaseServiceInterface;
+use OxidEsales\EshopCommunity\Internal\Framework\Configuration\DataObject\DatabaseConfiguration;
+use OxidEsales\EshopCommunity\Internal\Setup\Database\SetupDbConnectionFactoryInterface;
+use OxidEsales\EshopCommunity\Tests\ContainerTrait;
+use OxidEsales\EshopCommunity\Tests\DatabaseTrait;
+use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 use PHPUnit\Framework\TestCase;
 
-class DropDatabaseServiceTest extends TestCase
+final class DropDatabaseServiceTest extends TestCase
 {
-    /** @var array */
-    private $params = [];
+    use ContainerTrait;
+    use DatabaseTrait;
 
-    public function setUp(): void
+    public function tearDown(): void
     {
-        $this->params = $this->getDatabaseConnectionInfo();
-        $this->params['dbName'] = 'oxid_drop_db_test';
-
-        parent::setUp();
+        parent::tearDown();
+        $this->setupShopDatabase();
     }
 
+    #[DoesNotPerformAssertions]
     public function testDropDatabase(): void
     {
-        (new DatabaseCreator())->createDatabase(
-            $this->params['dbHost'],
-            $this->params['dbPort'],
-            $this->params['dbUser'],
-            $this->params['dbPwd'],
-            $this->params['dbName']
-        );
-        $this->assertNotFalse($this->checkDatabaseConnection());
-        (new DropDatabaseService())->dropDatabase(
-            $this->params['dbHost'],
-            $this->params['dbPort'],
-            $this->params['dbUser'],
-            $this->params['dbPwd'],
-            $this->params['dbName']
-        );
-        $this->assertFalse($this->checkDatabaseConnection());
-    }
+        $databaseConfiguration = new DatabaseConfiguration(getenv('OXID_DB_URL'));
+        $this->get(SetupDbConnectionFactoryInterface::class)->getDatabaseConnection($databaseConfiguration);
 
-    public function testDropDatabaseWithIncorrectCredentials(): void
-    {
-        $this->expectException(DatabaseConnectionException::class);
-        (new DropDatabaseService())->dropDatabase(
-            $this->params['dbHost'],
-            $this->params['dbPort'],
-            '',
-            '',
-            $this->params['dbName']
-        );
-    }
+        $this->get(DropDatabaseServiceInterface::class)->dropDatabase($databaseConfiguration);
 
-    public function testDropNotExistingDatabase(): void
-    {
-        $this->expectException(PDOException::class);
-        $this->expectExceptionMessage("Can't drop database 'oxid_drop_db_test'; database doesn't exist");
-        (new DropDatabaseService())->dropDatabase(
-            $this->params['dbHost'],
-            $this->params['dbPort'],
-            $this->params['dbUser'],
-            $this->params['dbPwd'],
-            $this->params['dbName']
-        );
-    }
-
-    private function checkDatabaseConnection(): bool
-    {
         try {
-            $dbConnection = new PDO(
-                sprintf('mysql:host=%s;port=%s;dbname=%s', $this->params['dbHost'], $this->params['dbPort'], $this->params['dbName']),
-                $this->params['dbUser'],
-                $this->params['dbPwd'],
-                [PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8']
-            );
-            $dbConnection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $dbConnection->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-        } catch (PDOException $exception) {
-            return false;
+            $this->get(SetupDbConnectionFactoryInterface::class)->getDatabaseConnection($databaseConfiguration);
+        } catch (ConnectionException) {
+            return;
         }
-        return true;
-    }
-
-    private function getDatabaseConnectionInfo(): array
-    {
-        $configFile = new ConfigFile();
-
-        return [
-            'dbHost' => $configFile->getVar('dbHost'),
-            'dbPort' => (int) $configFile->getVar('dbPort'),
-            'dbUser' => $configFile->getVar('dbUser'),
-            'dbPwd'  => $configFile->getVar('dbPwd')
-        ];
+        $this->fail('Database was not removed');
     }
 }

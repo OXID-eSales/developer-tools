@@ -7,6 +7,7 @@
 
 namespace OxidEsales\DeveloperTools\Framework\Database\Service;
 
+use OxidEsales\EshopCommunity\Internal\Framework\Configuration\DataObject\DatabaseConfiguration;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\Exception\DatabaseConnectionException;
 
 interface DropDatabaseServiceInterface
@@ -14,5 +15,5 @@ interface DropDatabaseServiceInterface
     /**
      * @throws DatabaseConnectionException
      */
-    public function dropDatabase(string $host, int $port, string $username, string $password, string $name): void;
+    public function dropDatabase(DatabaseConfiguration $databaseConfiguration): void;
 }

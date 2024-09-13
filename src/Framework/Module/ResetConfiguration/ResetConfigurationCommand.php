@@ -19,15 +19,10 @@ class ResetConfigurationCommand extends Command
     private const COMMAND_DESCRIPTION = 'Removes and re-installs project configuration.';
     private const COMMAND_NAME = 'oe:module:reset-configurations';
 
-    /** @var ConfigurationResettingServiceInterface */
-    private $configurationResetter;
-
-    /** @param ConfigurationResettingServiceInterface $configurationRestorer */
     public function __construct(
-        ConfigurationResettingServiceInterface $configurationRestorer
+        private readonly ConfigurationResettingServiceInterface $configurationResetter
     ) {
         parent::__construct();
-        $this->configurationResetter = $configurationRestorer;
     }
 
     protected function configure(): void
@@ -36,11 +31,6 @@ class ResetConfigurationCommand extends Command
             ->setDescription(self::COMMAND_DESCRIPTION);
     }
 
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int
-     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->configurationResetter->reset();

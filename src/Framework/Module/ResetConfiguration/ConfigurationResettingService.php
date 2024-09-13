@@ -14,7 +14,7 @@ use OxidEsales\EshopCommunity\Internal\Framework\Module\Install\Service\ModuleCo
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Install\Service\ProjectConfigurationGeneratorInterface;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Path\ModulePathResolverInterface;
 
-class ConfigurationResettingService implements ConfigurationResettingServiceInterface
+readonly class ConfigurationResettingService implements ConfigurationResettingServiceInterface
 {
     public function __construct(
         private ModuleConfigurationInstallerInterface $moduleConfigurationInstaller,

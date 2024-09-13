@@ -9,39 +9,22 @@ declare(strict_types=1);
 
 namespace OxidEsales\DeveloperTools\Framework\Database\Service;
 
-use OxidEsales\EshopCommunity\Internal\Setup\Database\Exception\DatabaseConnectionException;
-use PDO;
-use Throwable;
+use OxidEsales\EshopCommunity\Internal\Framework\Configuration\DataObject\DatabaseConfiguration;
+use OxidEsales\EshopCommunity\Internal\Setup\Database\SetupDbConnectionFactoryInterface;
 
-class DropDatabaseService implements DropDatabaseServiceInterface
+readonly class DropDatabaseService implements DropDatabaseServiceInterface
 {
-    /**
-     * @inheritDoc
-     */
-    public function dropDatabase(string $host, int $port, string $username, string $password, string $name): void
-    {
-        $this->getDatabaseConnection($host, $port, $username, $password)
-            ->exec('DROP DATABASE ' . $name . ';');
+    public function __construct(
+        private SetupDbConnectionFactoryInterface $setupDbConnectionFactory,
+    ) {
     }
 
-    private function getDatabaseConnection(string $host, int $port, string $username, string $password): PDO
+    public function dropDatabase(DatabaseConfiguration $databaseConfiguration): void
     {
-        try {
-            $dbConnection = new PDO(
-                sprintf('mysql:host=%s;port=%s', $host, $port),
-                $username,
-                $password,
-                [PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8']
-            );
-            $dbConnection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $dbConnection->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-        } catch (Throwable $exception) {
-            throw new DatabaseConnectionException(
-                'Failed: Unable to connect to database',
-                $exception->getCode(),
-                $exception
-            );
-        }
-        return $dbConnection;
+        $connection = $this->setupDbConnectionFactory->getServerConnection($databaseConfiguration);
+        $connection->executeStatement(
+            sprintf('DROP DATABASE `%s`;', $databaseConfiguration->getName())
+        );
+        $connection->close();
     }
 }

@@ -89,6 +89,7 @@ final class ResetDatabaseCommandTest extends TestCase
     {
         $commandTester = new CommandTester($this->getCommandWithInteraction());
         $commandTester->setInputs(['no']);
+
         $exitCode = $commandTester->execute([]);
 
         $this->assertSame(Command::SUCCESS, $exitCode);
