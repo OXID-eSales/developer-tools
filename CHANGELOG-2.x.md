@@ -1,6 +1,6 @@
 # Change Log for OXID developer tools component
 
-## v2.4.1 - unreleased
+## v2.4.1 - 2024-10-14
 
 ### Added
 - Debug output for database reset command
