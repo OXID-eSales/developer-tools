@@ -1,5 +1,13 @@
 # Change Log for OXID developer tools component
 
+## v2.5.0 - Unreleased
+
+### Added
+- PHPUnit v11 support
+
+### Removed
+- PHPUnit v10 support
+
 ## v2.4.1 - 2024-10-14
 
 ### Added
