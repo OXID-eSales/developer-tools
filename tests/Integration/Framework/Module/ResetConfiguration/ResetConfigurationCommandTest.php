@@ -10,11 +10,11 @@ declare(strict_types=1);
 namespace OxidEsales\DeveloperTools\Tests\Integration\Framework\Module\ResetConfiguration;
 
 use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
+use OxidEsales\EshopCommunity\Internal\Framework\FileSystem\ProjectRootLocator;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ShopConfigurationDaoBridgeInterface;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Install\DataObject\OxidEshopPackage;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Install\Service\ModuleInstallerInterface;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Setup\Bridge\ModuleActivationBridgeInterface;
-use OxidEsales\Facts\Facts;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -44,7 +44,7 @@ final class ResetConfigurationCommandTest extends TestCase
     protected function setUp(): void
     {
         $this->installModule();
-        $this->path = (new Facts())->getShopRootPath();
+        $this->path = (new ProjectRootLocator())->getProjectRoot();
         $this->fileSystem = new Filesystem();
         $this->createConfigBackup();
         parent::setUp();
