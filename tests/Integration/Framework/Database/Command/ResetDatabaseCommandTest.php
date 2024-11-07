@@ -17,6 +17,7 @@ use OxidEsales\EshopCommunity\Internal\Setup\Database\Exception\DatabaseExistsEx
 use OxidEsales\EshopCommunity\Internal\Setup\Database\Service\DatabaseCheckerInterface;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\Service\DatabaseCreatorInterface;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\Service\DatabaseInitiatorInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Console\Application;
@@ -41,9 +42,7 @@ final class ResetDatabaseCommandTest extends TestCase
         '--db-password' => self::DB_PASS,
     ];
 
-    /**
-     * @dataProvider missingOptions
-     */
+    #[DataProvider('missingOptions')]
     public function testExecuteWithMissingArgs(string $command): void
     {
         $options = [
