@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace OxidEsales\DeveloperTools\Framework\Database\Service;
 
-use OxidEsales\EshopCommunity\Internal\Framework\Configuration\DataObject\DatabaseConfiguration;
+use OxidEsales\EshopCommunity\Internal\Framework\Database\Configuration\DataObject\DatabaseConfiguration;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\SetupDbConnectionFactoryInterface;
 
 readonly class DropDatabaseService implements DropDatabaseServiceInterface

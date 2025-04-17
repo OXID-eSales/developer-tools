@@ -13,3 +13,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - `oe:database:reset` command now  fetches DB connection parameters from the Symfony container.
 All corresponding command-line parameters were removed
+- Update `DatabaseConfiguration` namespace

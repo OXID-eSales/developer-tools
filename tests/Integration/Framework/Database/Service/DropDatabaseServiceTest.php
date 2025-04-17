@@ -11,7 +11,7 @@ namespace OxidEsales\DeveloperTools\Tests\Integration\Framework\Database\Service
 
 use Doctrine\DBAL\Exception\ConnectionException;
 use OxidEsales\DeveloperTools\Framework\Database\Service\DropDatabaseServiceInterface;
-use OxidEsales\EshopCommunity\Internal\Framework\Configuration\DataObject\DatabaseConfiguration;
+use OxidEsales\EshopCommunity\Internal\Framework\Database\Configuration\DataObject\DatabaseConfiguration;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\SetupDbConnectionFactoryInterface;
 use OxidEsales\EshopCommunity\Tests\ContainerTrait;
 use OxidEsales\EshopCommunity\Tests\DatabaseTrait;

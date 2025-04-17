@@ -10,7 +10,7 @@ declare(strict_types=1);
 namespace OxidEsales\DeveloperTools\Framework\Database\Command;
 
 use OxidEsales\DeveloperTools\Framework\Database\Service\DropDatabaseServiceInterface;
-use OxidEsales\EshopCommunity\Internal\Framework\Configuration\DataObject\DatabaseConfiguration;
+use OxidEsales\EshopCommunity\Internal\Framework\Database\Configuration\DataObject\DatabaseConfiguration;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\DatabaseAlreadyExistsException;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\SetupDbConnectionValidatorInterface;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\ShopDbManagerInterface;
