@@ -9,11 +9,13 @@ declare(strict_types=1);
 
 namespace OxidEsales\DeveloperTools\Framework\Database\Command;
 
+use Doctrine\DBAL\Exception\ConnectionException;
 use OxidEsales\DeveloperTools\Framework\Database\Service\DropDatabaseServiceInterface;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\Configuration\DataObject\DatabaseConfiguration;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\DatabaseNotEmptyException;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\SetupDbConnectionFactoryInterface;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\SetupDbConnectionValidatorInterface;
+use OxidEsales\EshopCommunity\Internal\Setup\Database\SetupDbValidatorInterface;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\ShopDbManagerInterface;
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\BasicContextInterface;
 use Symfony\Component\Console\Command\Command;
@@ -21,7 +23,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
-use Doctrine\DBAL\Exception\ConnectionException;
 
 class ResetDatabaseCommand extends Command
 {
@@ -41,6 +42,7 @@ EOF;
     public function __construct(
         private readonly BasicContextInterface $basicContext,
         private readonly SetupDbConnectionValidatorInterface $setupDbConnectionValidator,
+        private readonly SetupDbValidatorInterface $setupDbValidator,
         private readonly ShopDbManagerInterface $shopDbManager,
         private readonly DropDatabaseServiceInterface $dropDatabaseService,
         private readonly SetupDbConnectionFactoryInterface $databaseConnectionFactory
@@ -60,7 +62,8 @@ EOF;
         $this->dbConfig = new DatabaseConfiguration($this->basicContext->getDatabaseUrl());
         try {
             $this->setupDbConnectionValidator->validate($this->dbConfig);
-            $output->writeln('<info>Database does not exist...</info>');
+            $this->setupDbValidator->validate($this->dbConfig);
+            $output->writeln('<info>Database is empty, or does not exist...</info>');
         } catch (DatabaseNotEmptyException) {
             if (!$this->proceedToDropDatabase($input, $output)) {
                 $output->writeln('<info>Reset has been canceled.</info>');

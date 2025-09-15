@@ -18,11 +18,11 @@ use OxidEsales\EshopCommunity\Internal\Framework\Database\Configuration\InvalidD
 use OxidEsales\EshopCommunity\Internal\Setup\Database\DatabaseNotEmptyException;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\SetupDbConnectionFactoryInterface;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\SetupDbConnectionValidatorInterface;
+use OxidEsales\EshopCommunity\Internal\Setup\Database\SetupDbValidatorInterface;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\ShopDbManagerInterface;
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\BasicContextInterface;
 use OxidEsales\EshopCommunity\Tests\Unit\Internal\BasicContextStub;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Argument;
 use Prophecy\Argument\Token\TypeToken;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
@@ -36,6 +36,7 @@ final class ResetDatabaseCommandTest extends TestCase
 
     private BasicContextInterface $basicContext;
     private SetupDbConnectionValidatorInterface | ObjectProphecy $setupDbConnectionValidator;
+    private SetupDbValidatorInterface | ObjectProphecy $setupDbValidator;
     private ShopDbManagerInterface | ObjectProphecy $shopDbManager;
     private DropDatabaseServiceInterface | ObjectProphecy $dropDatabaseService;
     private DatabaseConfiguration | TypeToken $dbConfigStub;
@@ -123,6 +124,7 @@ final class ResetDatabaseCommandTest extends TestCase
         $command = new ResetDatabaseCommand(
             $this->basicContext,
             $this->setupDbConnectionValidator->reveal(),
+            $this->setupDbValidator->reveal(),
             $this->shopDbManager->reveal(),
             $this->dropDatabaseService->reveal(),
             $this->databaseConnectionFactory->reveal()
@@ -138,6 +140,7 @@ final class ResetDatabaseCommandTest extends TestCase
     {
         $this->basicContext = new BasicContextStub();
         $this->setupDbConnectionValidator = $this->prophesize(SetupDbConnectionValidatorInterface::class);
+        $this->setupDbValidator = $this->prophesize(SetupDbValidatorInterface::class);
         $this->shopDbManager = $this->prophesize(ShopDbManagerInterface::class);
         $this->dropDatabaseService = $this->prophesize(DropDatabaseServiceInterface::class);
         $this->dbConfigStub = new TypeToken(DatabaseConfiguration::class);
