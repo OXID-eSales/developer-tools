@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidEsales\DeveloperTools\Tests\Integration\Framework\Database\Service;
 
 use OxidEsales\DeveloperTools\Framework\Database\Service\DropDatabaseService;
+use OxidEsales\Eshop\Core\Database\Adapter\Doctrine\Database;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\Service\DatabaseCreator;
 use OxidEsales\EshopCommunity\Internal\Setup\Database\Exception\DatabaseConnectionException;
 use OxidEsales\Facts\Config\ConfigFile;
@@ -79,10 +80,15 @@ class DropDatabaseServiceTest extends TestCase
     {
         try {
             $dbConnection = new PDO(
-                sprintf('mysql:host=%s;port=%s;dbname=%s', $this->params['dbHost'], $this->params['dbPort'], $this->params['dbName']),
+                sprintf(
+                    'mysql:host=%s;port=%s;dbname=%s',
+                    $this->params['dbHost'],
+                    $this->params['dbPort'],
+                    $this->params['dbName']
+                ),
                 $this->params['dbUser'],
                 $this->params['dbPwd'],
-                [PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8']
+                [Database::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8']
             );
             $dbConnection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $dbConnection->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);

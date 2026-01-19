@@ -1,5 +1,13 @@
 # Change Log for OXID developer tools component
 
+## v2.6.0 - Unreleased
+
+### Added
+- PHP v8.5 support
+
+### Removed
+- PHP v8.2 support
+
 ## v2.5.0 - 2025-04-10
 
 ### Added
