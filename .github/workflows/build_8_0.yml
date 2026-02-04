@@ -1,0 +1,140 @@
+name: Development - 8.0.x
+
+on:
+  push:
+    branches:
+      - 'b-8*'
+  workflow_dispatch:
+
+jobs:
+  install_shop:
+    strategy:
+      matrix:
+        php: [ '8.4', '8.5' ]
+        mysql: [ '8.0', '8.4' ]
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone testing environment (master)
+        run: git clone --depth 1 https://github.com/OXID-eSales/docker-eshop-sdk.git --branch master --single-branch .
+
+      - name: Clone the shop (b-8.0.x)
+        run: git clone --depth 1 https://github.com/OXID-eSales/oxideshop_ce.git --branch b-8.0.x --single-branch source
+
+      - name: Cache current installation
+        uses: actions/cache@v4
+        with:
+          path: |
+            ./*
+          key: devtools-${{ matrix.php }}-${{ matrix.mysql }}-${{ github.sha }}-${{ github.run_number }}-${{ github.run_attempt }}
+
+      - name: Prepare container configuration
+        run: |
+          make setup
+          make addbasicservices
+          perl -pi\
+              -e "s#PHP_VERSION=.*#PHP_VERSION='${{ matrix.php }}'#g;"\
+              -e "s#MYSQL_VERSION=.*#MYSQL_VERSION='${{ matrix.mysql }}'#g;"\
+              .env
+          perl -pi\
+              -e 's#display_errors =.*#display_errors = false#g;'\
+              -e 'print "xdebug.max_nesting_level=1000\n\n";'\
+              -e 'print "error_reporting = E_ALL & ~E_DEPRECATED & ~E_NOTICE & ~E_WARNING\n"'\
+              containers/php/custom.ini
+          perl -pi\
+              -e 's#/var/www/#/var/www/source/#g;'\
+              containers/httpd/project.conf
+
+      - name: Prepare shop configuration
+        run: |
+          perl -pi\
+            -e 'print "SetEnvIf Authorization \"(.*)\" HTTP_AUTHORIZATION=\$1\n\n" if $. == 1'\
+            source/source/.htaccess
+
+      - name: Create logs directory
+        run: mkdir -p logs
+
+      - name: Start containers
+        run: |
+          make up
+          sleep 2
+
+      - name: Install basic twig components (shop)
+        run: |
+          docker compose exec -T php composer config preferred-install.oxid-esales/* source
+          docker compose exec -T php composer require oxid-esales/twig-component:dev-b-8.0.x --no-update
+          docker compose exec -T php composer require oxid-esales/twig-admin-theme:dev-b-8.0.x --no-update
+          docker compose exec -T php composer require oxid-esales/apex-theme:dev-b-8.0.x --no-update
+
+      - name: Install dependencies (shop)
+        run: docker compose exec -T php composer update --no-interaction
+
+      - name: Install current branch of the developer-tools
+        run: docker compose exec -T php composer require oxid-esales/developer-tools:dev-${{ github.ref_name }}
+
+      - name: Reset shop
+        run: docker compose exec -T php php bin/oe-console oe:database:reset --force
+
+      - name: Stop containers
+        run: |
+          docker compose down
+          sleep 2
+
+  integration_tests:
+    strategy:
+      matrix:
+        php: [ '8.4', '8.5' ]
+        mysql: [ '8.0', '8.4' ]
+      fail-fast: false
+    needs: [ install_shop ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Load current installation from cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ./*
+          key: devtools-${{ matrix.php }}-${{ matrix.mysql }}-${{ github.sha }}-${{ github.run_number }}-${{ github.run_attempt }}
+          restore-keys: |
+            devtools-${{ matrix.php }}-${{ matrix.mysql }}-${{ github.sha }}-${{ github.run_number }}-${{ github.run_attempt }}
+
+      - name: Start containers
+        run: |
+          make up
+          sleep 2
+
+      - name: Doing PHP_CS check
+        run: |
+          DT_ROOT="/var/www/vendor/oxid-esales/developer-tools/"
+          echo "DT_ROOT=$DT_ROOT" >> $GITHUB_ENV
+          cd source/vendor/oxid-esales/developer-tools
+          git diff --name-only --diff-filter=AM origin/${{ github.ref_name }} HEAD~1 | grep '\.php$' > changed-files.txt | while read file; do
+            if [[ -f "$file" ]]; then
+              echo "$file"
+            fi
+          done > changed-files.txt || true
+          perl -pi -e "s#^#$DT_ROOT#" changed-files.txt
+          if [[ -f "changed-files.txt" && -s "changed-files.txt" ]]; then
+             cd ../../../../
+             docker compose exec -T php vendor/bin/phpcs --standard=psr12 --file-list=vendor/oxid-esales/developer-tools/changed-files.txt \
+              | tee phpcs_PHP${{ matrix.php }}_MYSQL${{ matrix.mysql }}_codesniff_log.txt  || true
+             rm source/vendor/oxid-esales/developer-tools/changed-files.txt || true
+             if grep -q -Ei 'fail|\\.\\=\\=|Warning|Notice|Deprecated|Fatal|Error' phpcs_PHP${{ matrix.php }}_MYSQL${{ matrix.mysql }}_codesniff_log.txt; then
+                exit 1;
+             fi
+          fi
+
+      - name: Run tests
+        run: |
+          docker compose exec -T \
+            php php vendor/bin/phpunit vendor/oxid-esales/developer-tools/tests --bootstrap=/var/www/source/bootstrap.php | tee integration_PHP${{ matrix.php }}_MYSQL${{ matrix.mysql }}_phpunit_log.txt 2>&1 || true
+          if grep -q -Ei 'fail|\\.\\=\\=|Warning|Notice|Deprecated|Fatal|Error' integration_PHP${{ matrix.php }}_MYSQL${{ matrix.mysql }}_phpunit_log.txt; then exit 1; fi
+
+      - name: Upload PHPUnit Log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpunit-logs-PHP${{ matrix.php }}-MYSQL${{ matrix.mysql }}
+          path: integration_PHP${{ matrix.php }}_MYSQL${{ matrix.mysql }}_phpunit_log.txt
+          if-no-files-found: error
+          retention-days: 7
