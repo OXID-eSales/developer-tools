@@ -1,6 +1,6 @@
 # Change Log for OXID developer tools component
 
-## v3.0.0-alpha.2 unreleased
+## v3.0.0-alpha.2 - Unreleased
 
 ### Changed
 - `oe:database:reset` now listens for `DatabaseNotEmptyException`
