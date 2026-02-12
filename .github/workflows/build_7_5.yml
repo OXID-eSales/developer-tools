@@ -1,28 +1,28 @@
-name: Development - 7.0.x
+name: Development - 7.5.x
 
 on:
   push:
     branches:
-      - 'b-7.0*'
+      - 'b-7.5*'
   workflow_dispatch:
 
 jobs:
   install_shop:
     strategy:
       matrix:
-        php: [ '8.1', '8.2' ]
-        mysql: [ '5.7', '8.0' ]
+        php: [ '8.3', '8.4', '8.5' ]
+        mysql: [ '8.0', '8.4' ]
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
       - name: Clone testing environment (master)
         run: git clone --depth 1 https://github.com/OXID-eSales/docker-eshop-sdk.git --branch master --single-branch .
 
-      - name: Clone the shop (b-7.0.x)
-        run: git clone --depth 1 https://github.com/OXID-eSales/oxideshop_ce.git --branch b-7.0.x --single-branch source
+      - name: Clone the shop (b-7.5.x)
+        run: git clone --depth 1 https://github.com/OXID-eSales/oxideshop_ce.git --branch b-7.5.x --single-branch source
 
       - name: Cache current installation
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ./*
@@ -73,9 +73,9 @@ jobs:
       - name: Install basic twig components (shop)
         run: |
           docker compose exec -T php composer config preferred-install.oxid-esales/* source
-          docker compose exec -T php composer require oxid-esales/twig-component:dev-b-7.0.x --no-update
-          docker compose exec -T php composer require oxid-esales/twig-admin-theme:dev-b-7.0.x --no-update
-          docker compose exec -T php composer require oxid-esales/twig-theme:dev-b-7.0.x --no-update
+          docker compose exec -T php composer require oxid-esales/twig-component:dev-b-7.5.x --no-update
+          docker compose exec -T php composer require oxid-esales/twig-admin-theme:dev-b-7.5.x --no-update
+          docker compose exec -T php composer require oxid-esales/apex-theme:dev-b-7.5.x --no-update
 
       - name: Install dependencies (shop)
         run: docker compose exec -T php composer update --no-interaction
@@ -94,14 +94,14 @@ jobs:
   integration_tests:
     strategy:
       matrix:
-        php: [ '8.1', '8.2' ]
-        mysql: [ '5.7', '8.0' ]
+        php: [ '8.3', '8.4', '8.5' ]
+        mysql: [ '8.0', '8.4' ]
       fail-fast: false
     needs: [ install_shop ]
     runs-on: ubuntu-latest
     steps:
       - name: Load current installation from cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ./*
@@ -123,15 +123,15 @@ jobs:
             if [[ -f "$file" ]]; then
               echo "$file"
             fi
-          done > changed-files.txt || true 
+          done > changed-files.txt || true
           perl -pi -e "s#^#$DT_ROOT#" changed-files.txt
           if [[ -f "changed-files.txt" && -s "changed-files.txt" ]]; then
              cd ../../../../
              docker compose exec -T php vendor/bin/phpcs --standard=psr12 --file-list=vendor/oxid-esales/developer-tools/changed-files.txt \
               | tee phpcs_PHP${{ matrix.php }}_MYSQL${{ matrix.mysql }}_codesniff_log.txt  || true
              rm source/vendor/oxid-esales/developer-tools/changed-files.txt || true
-             if grep -q -Ei 'fail|\\.\\=\\=|Warning|Notice|Deprecated|Fatal|Error' phpcs_PHP${{ matrix.php }}_MYSQL${{ matrix.mysql }}_codesniff_log.txt; then 
-                exit 1; 
+             if grep -q -Ei 'fail|\\.\\=\\=|Warning|Notice|Deprecated|Fatal|Error' phpcs_PHP${{ matrix.php }}_MYSQL${{ matrix.mysql }}_codesniff_log.txt; then
+                exit 1;
              fi
           fi
 
@@ -143,9 +143,9 @@ jobs:
 
       - name: Upload PHPUnit Log
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: phpunit-logs
+          name: phpunit-logs-PHP${{ matrix.php }}-MYSQL${{ matrix.mysql }}
           path: integration_PHP${{ matrix.php }}_MYSQL${{ matrix.mysql }}_phpunit_log.txt
           if-no-files-found: error
           retention-days: 7
