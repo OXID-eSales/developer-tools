@@ -1,20 +1,24 @@
 {
-  "name": "oxid-esales/developer-tools",
-  "description": "The component contains developer tools.",
-  "type": "oxideshop-component",
-  "keywords": ["oxid", "component", "eShop"],
-  "homepage": "https://www.oxid-esales.com",
-  "license": [
-    "proprietary"
-  ],
-  "autoload": {
-    "psr-4": {
-      "OxidEsales\\DeveloperTools\\": "./src"
+    "name": "oxid-esales/developer-tools",
+    "description": "The component contains developer tools.",
+    "type": "oxideshop-component",
+    "keywords": [
+        "oxid",
+        "component",
+        "eShop"
+    ],
+    "homepage": "https://www.oxid-esales.com",
+    "license": [
+        "proprietary"
+    ],
+    "autoload": {
+        "psr-4": {
+            "OxidEsales\\DeveloperTools\\": "./src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "OxidEsales\\DeveloperTools\\Tests\\": "./tests"
+        }
     }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "OxidEsales\\DeveloperTools\\Tests\\": "./tests"
-    }
-  }
 }
