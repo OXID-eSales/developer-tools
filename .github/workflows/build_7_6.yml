@@ -1,28 +1,28 @@
-name: Development - 7.5.x
+name: Development - 7.6.x
 
 on:
   push:
     branches:
-      - 'b-7.5*'
+      - 'b-7.6*'
   workflow_dispatch:
 
 jobs:
   install_shop:
     strategy:
       matrix:
-        php: [ '8.3', '8.4', '8.5' ]
-        mysql: [ '8.0', '8.4' ]
+        php: ['8.3', '8.4', '8.5']
+        mysql: ['8.0', '8.4']
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
       - name: Clone testing environment (master)
         run: git clone --depth 1 https://github.com/OXID-eSales/docker-eshop-sdk.git --branch master --single-branch .
 
-      - name: Clone the shop (b-7.5.x)
-        run: git clone --depth 1 https://github.com/OXID-eSales/oxideshop_ce.git --branch b-7.5.x --single-branch source
+      - name: Clone the shop (b-7.6.x)
+        run: git clone --depth 1 https://github.com/OXID-eSales/oxideshop_ce.git --branch b-7.6.x --single-branch source
 
       - name: Cache current installation
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ./*
@@ -73,9 +73,9 @@ jobs:
       - name: Install basic twig components (shop)
         run: |
           docker compose exec -T php composer config preferred-install.oxid-esales/* source
-          docker compose exec -T php composer require oxid-esales/twig-component:dev-b-7.5.x --no-update
-          docker compose exec -T php composer require oxid-esales/twig-admin-theme:dev-b-7.5.x --no-update
-          docker compose exec -T php composer require oxid-esales/apex-theme:dev-b-7.5.x --no-update
+          docker compose exec -T php composer require oxid-esales/twig-component:dev-b-7.6.x --no-update
+          docker compose exec -T php composer require oxid-esales/twig-admin-theme:dev-b-7.6.x --no-update
+          docker compose exec -T php composer require oxid-esales/apex-theme:dev-b-7.6.x --no-update
 
       - name: Install dependencies (shop)
         run: docker compose exec -T php composer update --no-interaction
@@ -94,14 +94,14 @@ jobs:
   integration_tests:
     strategy:
       matrix:
-        php: [ '8.3', '8.4', '8.5' ]
-        mysql: [ '8.0', '8.4' ]
+        php: ['8.3', '8.4', '8.5']
+        mysql: ['8.0', '8.4']
       fail-fast: false
-    needs: [ install_shop ]
+    needs: [install_shop]
     runs-on: ubuntu-latest
     steps:
       - name: Load current installation from cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ./*
@@ -143,7 +143,7 @@ jobs:
 
       - name: Upload PHPUnit Log
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: phpunit-logs-PHP${{ matrix.php }}-MYSQL${{ matrix.mysql }}
           path: integration_PHP${{ matrix.php }}_MYSQL${{ matrix.mysql }}_phpunit_log.txt
