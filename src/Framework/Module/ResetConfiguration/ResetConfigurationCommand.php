@@ -12,6 +12,7 @@ namespace OxidEsales\DeveloperTools\Framework\Module\ResetConfiguration;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 class ResetConfigurationCommand extends Command
 {
@@ -33,8 +34,9 @@ class ResetConfigurationCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $io = new SymfonyStyle($input, $output);
         $this->configurationResetter->reset();
-        $output->writeln(sprintf('<info>%s.</info>', self::EXECUTE_SUCCESS_MESSAGE));
-        return 0;
+        $io->success(self::EXECUTE_SUCCESS_MESSAGE);
+        return Command::SUCCESS;
     }
 }

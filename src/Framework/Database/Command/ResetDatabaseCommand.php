@@ -22,7 +22,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 class ResetDatabaseCommand extends Command
 {
@@ -58,41 +58,37 @@ EOF;
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $io = new SymfonyStyle($input, $output);
         $start = microtime(true);
         $this->dbConfig = new DatabaseConfiguration($this->basicContext->getDatabaseUrl());
         try {
             $this->setupDbConnectionValidator->validate($this->dbConfig);
             $this->setupDbValidator->validate($this->dbConfig);
-            $output->writeln('<info>Database is empty, or does not exist...</info>');
+            $io->info('Database is empty, or does not exist...');
         } catch (DatabaseNotEmptyException) {
-            if (!$this->proceedToDropDatabase($input, $output)) {
-                $output->writeln('<info>Reset has been canceled.</info>');
+            if (!$this->proceedToDropDatabase($input, $io)) {
+                $io->note('Reset has been canceled.');
 
                 return Command::SUCCESS;
             }
         }
 
         if ($this->databaseExists($this->dbConfig)) {
-            $output->writeln('<info>Dropping existing database...</info>');
+            $io->info('Dropping existing database...');
             $this->dropDatabaseService->dropDatabase($this->dbConfig);
         }
 
-        $output->writeln('<info>Creating database...</info>');
+        $io->info('Creating database...');
         $this->shopDbManager->create($this->dbConfig);
-        $output->writeln('<info>Reset has been finished in ' . round(microtime(true) - $start) . 's</info>');
+        $io->success('Reset has been finished in ' . round(microtime(true) - $start) . 's');
 
         return Command::SUCCESS;
     }
 
-    private function proceedToDropDatabase(InputInterface $input, OutputInterface $output): bool
+    private function proceedToDropDatabase(InputInterface $input, SymfonyStyle $io): bool
     {
         return $input->getOption(self::FORCE_RESET) ||
-            $this->getHelper('question')
-                ->ask(
-                    $input,
-                    $output,
-                    new ConfirmationQuestion(sprintf(self::CONFIRM_QUESTION, $this->dbConfig->getName()), false)
-                );
+            $io->confirm(sprintf(self::CONFIRM_QUESTION, $this->dbConfig->getName()), false);
     }
 
     private function databaseExists(DatabaseConfiguration $databaseConfiguration): bool
