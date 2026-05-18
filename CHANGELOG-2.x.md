@@ -1,5 +1,9 @@
 # Change Log for OXID developer tools component
 
+### Changed
+- Console commands return consistent exit codes on success (0) and failure (1)
+- Console commands output now uses SymfonyStyle for consistent formatting
+
 ## v2.6.0 - 2026-04-08
 
 ### Added

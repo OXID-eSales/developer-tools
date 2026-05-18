@@ -23,7 +23,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 class ResetDatabaseCommand extends Command
 {
@@ -84,7 +84,10 @@ class ResetDatabaseCommand extends Command
                 InputOption::VALUE_NONE,
                 "Don't ask for the deletion of the database, but force the operation to run."
             );
-        $this->setDescription('Performs database reset. <error>ATTENTION: This operation should not be executed in a production environment.</error>');
+        $this->setDescription(
+            'Performs database reset. <error>ATTENTION: This operation should not be executed'
+            . ' in a production environment.</error>'
+        );
 
         $this->setRequiredOptions([
             self::DB_HOST,
@@ -108,54 +111,48 @@ class ResetDatabaseCommand extends Command
     {
         $this->checkRequiredCommandOptions($this->getDefinition()->getOptions(), $input);
 
-        $output->writeln('<info>Resetting database...</info>');
+        $io = new SymfonyStyle($input, $output);
+        $io->info('Resetting database...');
         $start = microtime(true);
 
         if ($this->databaseExist($input)) {
-            if (!$this->forceDatabaseReset($input) && !$this->confirmAction($input, $output)) {
-                $output->writeln('<info>Reset has been canceled.</info>');
+            if (!$this->forceDatabaseReset($input) && !$this->confirmAction($input, $io)) {
+                $io->note('Reset has been canceled.');
                 return Command::SUCCESS;
             }
-            $output->writeln('<info>Dropping existing database...</info>');
+            $io->info('Dropping existing database...');
             $this->dropDatabase($input);
         }
         try {
-            $output->writeln('<info>Creating database...</info>');
+            $io->info('Creating database...');
             $this->createDatabase($input);
         } catch (DatabaseExistsException $exception) {
         }
 
-        $output->writeln('<info>Initializing database...</info>');
+        $io->info('Initializing database...');
         $this->initializeDatabase($input);
 
-        $output->writeln('<info>Reset has been finished in ' . (microtime(true) - $start) . '</info>');
+        $io->success('Reset has been finished in ' . (microtime(true) - $start));
 
         return Command::SUCCESS;
     }
 
     /**
-     * @param InputInterface  $input
-     * @param OutputInterface $output
+     * @param InputInterface $input
+     * @param SymfonyStyle   $io
      *
      * @return bool
      */
-    private function confirmAction(InputInterface $input, OutputInterface $output): bool
+    private function confirmAction(InputInterface $input, SymfonyStyle $io): bool
     {
-        $helper = $this->getHelper('question');
-        $question = new ConfirmationQuestion($this->getQuestionText($input), false);
-
-        return $helper->ask($input, $output, $question);
-    }
-
-    /**
-     * @param InputInterface $input
-     *
-     * @return string
-     */
-    private function getQuestionText(InputInterface $input): string
-    {
-        return sprintf('Seems there is already OXID eShop installed in database %s. All data in a given database will
-         be lost when executing this command. Continue executing it? [no/yes]', $input->getOption(self::DB_NAME));
+        return $io->confirm(
+            sprintf(
+                'Seems there is already OXID eShop installed in database %s.'
+                . ' All data in a given database will be lost when executing this command. Continue?',
+                $input->getOption(self::DB_NAME)
+            ),
+            false
+        );
     }
 
     /**
