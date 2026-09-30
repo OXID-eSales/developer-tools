@@ -1,5 +1,10 @@
 # Change Log for OXID developer tools component
 
+## v2.7.0 - Unreleased
+
+### Removed
+- PHP v8.3 support
+
 ### Changed
 - Console commands return consistent exit codes on success (0) and failure (1)
 - Console commands output now uses SymfonyStyle for consistent formatting
