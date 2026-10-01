@@ -19,7 +19,7 @@ jobs:
         run: git clone --depth 1 https://github.com/OXID-eSales/docker-eshop-sdk.git --branch master --single-branch .
 
       - name: Clone the shop (b-8.0.x)
-        run: git clone --depth 1 https://github.com/OXID-eSales/oxideshop_ce.git --branch b-8.0.x --single-branch source
+        run: git clone --depth 1 https://github.com/OXID-eSales/oxideshop_ce.git --branch b-8.0.x-php-unit-13-OXDEV-10592 --single-branch source
 
       - name: Cache current installation
         uses: actions/cache@v4
@@ -62,7 +62,7 @@ jobs:
       - name: Install basic twig components (shop)
         run: |
           docker compose exec -T php composer config preferred-install.oxid-esales/* source
-          docker compose exec -T php composer require oxid-esales/twig-component:dev-b-8.0.x --no-update
+          docker compose exec -T php composer require oxid-esales/twig-component:dev-b-8.0.x-php-unit-13-OXDEV-10592 --no-update
           docker compose exec -T php composer require oxid-esales/twig-admin-theme:dev-b-8.0.x --no-update
           docker compose exec -T php composer require oxid-esales/apex-theme:dev-b-8.0.x --no-update
 
