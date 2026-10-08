@@ -1,6 +1,6 @@
 # Change Log for OXID developer tools component
 
-## v2.7.0 - Unreleased
+## v2.7.0 - 2026-10-06
 
 ### Changed
 - Console commands return consistent exit codes on success (0) and failure (1)
